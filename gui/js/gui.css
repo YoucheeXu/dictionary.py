@@ -132,10 +132,19 @@
     position: absolute;
     left: 585px;
     bottom: 10px;
-}
+ }
 
-#txt_TOPMOST{
+/* #txt_TOPMOST{ */
+    /* position: absolute; */
+    /* left: 605px; */
+	/* /* top: 5px; */ */
+    /* bottom: 10px; */
+	/* font-size:80%; */
+	/* /* float: left; */ */
+	/* /* padding: -20px 0; */ */
+/* }  */
+
+.TopMost{
     position: absolute;
-    left: 605px;
-    bottom: -10px;	
+    left: 585px;
 }

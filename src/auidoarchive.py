@@ -8,14 +8,14 @@ import time
 from zipfile import ZIP_DEFLATED
 
 from src.ziparchive import ZipArchive
-from src.globalvar import GetLogger, GetApp
+from src.globalvar import get_logger, get_app
 
 
 class AuidoArchive():
 	def __init__(self, audioSrc, compression = ZIP_DEFLATED, compresslevel = 2):
 		global gLogger
 
-		gLogger = GetLogger()
+		gLogger = get_logger()
 
 		self.__bWritable = True
 
@@ -58,7 +58,7 @@ class AuidoArchive():
 			elif self.__bWritable:
 				audioURL = "https://ssl.gstatic.com/dictionary/static/sounds/oxford/" + word + "--_us_1.mp3"
 
-				err = GetApp().download_file(audioURL, audioFile);
+				err = get_app().download_file(audioURL, audioFile);
 				if err:
 					return False, str(err)
 

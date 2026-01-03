@@ -9,7 +9,7 @@ v1.0.1	given compression format
 import re
 from zipfile import *
 
-from src.globalvar import GetLogger
+from src.globalvar import get_logger
 
 
 class ZipArchive:
@@ -21,7 +21,7 @@ class ZipArchive:
 	def __init__(self, zip, compression, compresslevel):
 		global gLogger
 
-		gLogger = GetLogger()
+		gLogger = get_logger()
 
 		self.__zip = zip
 		self.__compression = compression

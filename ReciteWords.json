@@ -53,7 +53,7 @@
 	],
 
 	"Debug": {
-		"Enable": "true",
+		"Enable": true,
 		"File": "logs/ReciteWords.log"
 	},
 

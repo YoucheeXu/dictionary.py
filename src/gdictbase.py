@@ -16,7 +16,7 @@ import json
 
 from src.dictbase import DictBase
 from src.ziparchive import ZipArchive
-from src.globalvar import GetLogger, GetApp
+from src.globalvar import get_logger, get_app
 
 
 class GDictBase(DictBase):
@@ -24,7 +24,7 @@ class GDictBase(DictBase):
 	def __init__(self, dictSrc, compression, compresslevel):
 		global gLogger
 
-		gLogger = GetLogger()
+		gLogger = get_logger()
 
 		self.__bWritable = True
 		self.__dictZip = ZipArchive(dictSrc, compression, compresslevel)
@@ -50,7 +50,7 @@ class GDictBase(DictBase):
 				wordFile = os.path.join(self.__tempDir, word + ".json")
 				jsonURL = "http://dictionary.so8848.com/ajax_search?q=" + word
 				jsonURL = jsonURL.replace(" ", "%20")
-				err = GetApp().download_file(jsonURL, wordFile)
+				err = get_app().download_file(jsonURL, wordFile)
 				if err:
 					return False, str(err)
 
@@ -102,7 +102,7 @@ class GDictBase(DictBase):
 
 		except Exception as err:
 			# print("fail to query dict of " + word)
-			GetApp().log("error", "fail to query dict of " + word)
+			get_app().log("error", "fail to query dict of " + word)
 			datum = str(err).replace("<", "")
 			datum = datum.replace(">", "")
 			if os.path.exists(wordFile):

@@ -1,19 +1,23 @@
-<!DOCTYPE html>
-<html xmlns = "http://www.w3.org/1999/xhtml">
-    <head>
-        <title>GUI_v7.1.1</title>
-        <!-- <meta http-equiv = "Content-Type" content = "text/html; charset = utf-8"/> -->
+<!doctype html>
+<html lang="en">
+	<head>
+		<!-- Required meta tags -->
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link href = "./third_party/bootstrap-v4.1.3/css/bootstrap.min.css" rel = "stylesheet" type = "text/css">
+
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
 		<link href = "./third_party/bootstrap-tab/bootstrap-tab.css" rel = "stylesheet" type = "text/css">
 		<link href = "./third_party/font-awesome/css/font-awesome.min.css" rel = "stylesheet">
 		<link href = "./js/main.css" rel = "stylesheet" type = "text/css" media = "all"/>
 		<link href = "./js/gui.css" rel = "stylesheet" type = "text/css"/>
 		<link href = "./js/player.css" rel = "stylesheet" type = "text/css">
 		<link href = "./js/stars.css" rel = "stylesheet" type = "text/css">
-    </head>
-    <body scroll = "no" topmargin = "0" leftmargin = "0">
+
+		<title>Hello, world!</title>
+	</head>
+   <body scroll = "no" topmargin = "0" leftmargin = "0">
         <div class = "top_panel" >
 			<div class="dropdown" id = "menu_dropdown">
 				<button class = "btn" type = "button" id = "btn_menu" data-toggle = "dropdown" aria-haspopup = "true" aria-expanded = "false"></button>
@@ -38,6 +42,8 @@
         </div>
         <div id = "queryword" style = "display: none">such</div>
         <div class = "main_panel">
+			<!--div class = "" id = "words_list_box"
+				style = "overflow:auto; height:430px; width:201px; "-->
 			<select id = "words_list" size = "25" name = "decision2"
 				style = "border:none; width:201px; display:none; float:left;">
 				<!-- <option selected>word 1</option> -->
@@ -46,29 +52,28 @@
 				<!-- <option>word 4</option> -->
 				<!-- <option>word 5</option> -->
 			</select>
+			<!--/div-->
 			<div class = "" id = "contents_box" style = "overflow-y:auto; height:430px; width:701px; float:left;">
 				<div class = "Word">
 				</div>
 				<div id = "tabContainer">
 				</div>
-			</div>
+			</div><!-- /.contents_box -->
 			<div class = "top">
 				<a onclick = "window.scrollTo(0,0);" alt = "Top" href = "#top" title = "TOP" style = "color:#CC0000;">TOP</a>
 			</div>
         </div>
 		<div class = "bottom_panel">
-			<!-- <div class = "TopMost"> -->
-				<!-- <input type="checkbox" name="TopMost" value="TopMost" id = "chk_TOPMOST" checked="checked" onclick="TopMostOrNot()">Always TOP2</input> -->
-				<!-- <p id = "txt_TOPMOST"></p> -->
-			<!-- </div> -->
-			<label class = "TopMost"><input type = "checkbox" id = "chk_TOPMOST" style = "vertical-align:middle; margin-bottom:5px" checked="checked" onclick="TopMostOrNot()"/>Always TOP</label>
+			<input type="checkbox" name="TopMost" value="TopMost" id = "chk_TOPMOST" checked="checked" onclick="TopMostOrNot()"/>
+			<p id = "txt_TOPMOST">Always TOP</p>			
         </div>
-		<script type = "text/javascript" src = "./third_party/jquery-3.4.1.min.js"></script>
+
+		<!-- Optional JavaScript -->
+		<!-- jQuery first, then Popper.js, then Bootstrap JS -->
 		<!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
-		<!-- <script type = "text/javascript" src = "./third_party/popper.min.js"></script> -->
-		<!-- <script type = "text/javascript" src = "./third_party/bootstrap-v4.1.3/js/bootstrap.min.js"></script> -->
-		<script type = "text/javascript" src = "./third_party/bootstrap-v4.1.3/js/bootstrap.bundle.min.js"></script>
-		<script type = "text/javascript" src = "./third_party/bootstrap-tab/bootstrap-tab.js"></script>
+		<script type = "text/javascript" src = "./third_party/jquery-3.4.1.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 		<script type = "text/javascript" src = "./js/gui.js"></script>
 		<script type = "text/javascript" src = "./js/process.js"></script>		
 		<script type = "text/javascript" src = "./js/ajax.js"></script>
@@ -95,6 +100,6 @@
 					})
 				})
 			})(jQuery)
-		</script>
-    </body>	
+		</script>		
+	</body>
 </html>

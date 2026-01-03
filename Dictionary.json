@@ -1,6 +1,6 @@
 {
     "common": {
-        "ver": "1.0.1.3"
+        "ver": "1.0.1.4"
     },
     "GUI": {
         "Skin": "Skin/",
@@ -49,7 +49,7 @@
     ],
     "Agents": {
         "bIEAgent": false,
-        "activeAgent": "Factory",
+        "activeAgent": "None",
         "Info": [
             {
                 "Name": "XX-Net",
@@ -73,7 +73,7 @@
         "miss_audio": "logs/miss.txt"
     },
     "Debug": {
-        "bEnable": true,
+        "bEnable": false,
         "file": "logs/Dictionary.log"
     }
 }

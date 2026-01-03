@@ -10,11 +10,13 @@
 Known Bugs:
 * out of index happen when last one was chopped
 
+
 v1.0.0.9
-* rand in recite word
+* random in recite word
+* estimate day of finish
 
 Bug Fixed:
-
+* play mp3 also in win7_x64							almost OK (same code work in win10_x64 and win7_x64)
 
 
 v1.0.0.8

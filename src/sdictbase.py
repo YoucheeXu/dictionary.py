@@ -6,7 +6,7 @@
 '''
 from src.dictbase import DictBase
 from src.sqlite import SQLite
-from src.globalvar import GetLogger
+from src.globalvar import get_logger
 
 
 class SDictBase(DictBase):
@@ -17,7 +17,7 @@ class SDictBase(DictBase):
 	def __init__(self, dictSrc):
 		global gLogger
 
-		gLogger = GetLogger()
+		gLogger = get_logger()
 
 		self.__bWritable = False
 

@@ -1,27 +1,27 @@
 #-*- encoding:utf-8 -*-
 # -*- coding: utf-8 -*-
 #coding=utf-8
-
 import platform
 
-class globalVar:
+
+class GlobalVar:
 	app = None
 	gLogger = None
 
 	# Platforms
-	WINDOWS = (platform.system() == "Windows")
-	LINUX = (platform.system() == "Linux")
-	MAC = (platform.system() == "Darwin")
+	WINDOWS: bool = (platform.system() == "Windows")
+	LINUX: bool = (platform.system() == "Linux")
+	MAC: bool = (platform.system() == "Darwin")
 
-	b32bit = (platform.architecture()[0] == "32bit")
+	b32bit: bool = (platform.architecture()[0] == "32bit")
 
-def SetApp(app): globalVar.app = app
-def GetApp(): return globalVar.app
+def set_app(app): GlobalVar.app = app
+def get_app(): return GlobalVar.app
 
-def IsWindows(): return globalVar.WINDOWS
-def IsLinux(): return globalVar.LINUX
-def IsMAC(): return globalVar.MAC
-def Is32bit(): return globalVar.b32bit
+def is_windows(): return GlobalVar.WINDOWS
+def is_linux(): return GlobalVar.LINUX
+def is_mac(): return GlobalVar.MAC
+def is_32bit(): return GlobalVar.b32bit
 
-def SetLogger(logger): globalVar.gLogger = logger 
-def GetLogger(): return globalVar.gLogger
+def set_logger(logger): GlobalVar.gLogger = logger 
+def get_logger(): return GlobalVar.gLogger

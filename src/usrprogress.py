@@ -7,7 +7,7 @@ To-Do:
 * support create new dict and initialize it
 '''
 from src.sqlite import SQLite
-from src.globalvar import GetLogger
+from src.globalvar import get_logger
 
 
 class UsrProgress():
@@ -18,7 +18,7 @@ class UsrProgress():
 	def Open(self, dictSrc):
 		global gLogger
 
-		gLogger = GetLogger()
+		gLogger = get_logger()
 
 		self.__dictBase = SQLite()
 		self.__dictBase.Open(dictSrc)

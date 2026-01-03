@@ -5,7 +5,7 @@
 import sqlite3
 import os
 
-from src.globalvar import GetLogger
+from src.globalvar import get_logger
 
 
 class SQLite():
@@ -13,7 +13,7 @@ class SQLite():
 	def Open(self, file):
 		global gLogger
 
-		gLogger = GetLogger()
+		gLogger = get_logger()
 
 		if os.path.isfile(file) == False:
 			raise Exception("%s doesn't exit!" %(file))

@@ -6,23 +6,21 @@ import datetime
 import time
 import random
 import json
+from typing import cast
+import tkinter as tk
+import tkinter.messagebox as msgBox
 
-try:	# python3
-	import tkinter as tk
-	import tkinter.messagebox as msgBox
-except ImportError:
-	import Tkinter as tk
-	import tkMessageBox as msgBox
+import mp3play
 
 from src.usrprogress import UsrProgress
 from src.sdictbase import SDictBase
 from src.auidoarchive import AuidoArchive
-from src.globalvar import *
-from src.utils import *
+from src.globalvar import set_logger, set_app
+from src.utils import create_logger
 
 
 def main():
-	global gApp, gLogger, gCfg
+	global gapp, glogger, gcfg
 
 	curPath = os.getcwd()
 	cfgFile = os.path.join(curPath, "ReciteWords.json")
@@ -30,68 +28,67 @@ def main():
 	# print(cfgFile)
 	with open(cfgFile, 'rb') as f:
 		datum = f.read()
-	gCfg = json.loads(datum, strict = False)
+	gcfg = json.loads(datum, strict = False)
 
-	version = gCfg["Common"]["ver"]
+	version = cast(str, gcfg["Common"]["ver"])
 
-	bDebug = gCfg["Debug"]["Enable"]
-	logFile = None
-	
-	if bDebug:
-		logFile = gCfg["Debug"]["File"]
+	isdebug = cast(bool, gcfg["Debug"]["Enable"])
+	logfile = ""
 
-	lFile = os.path.join(curPath, logFile)
+	if isdebug:
+		logfile = cast(str, gcfg["Debug"]["File"])
 
-	gLogger = create_logger("ReciteWords", logFile)
-	SetLogger(gLogger)
+	glogger = create_logger("ReciteWords", logfile)
+	set_logger(glogger)
 
-	gLogger.info(str(datetime.date.today()))
+	glogger.info(str(datetime.date.today()))
 	# gLogger.info(platform.python_version())
-	gLogger.info("Python {ver} {arch}".format(
+	glogger.info("Python {ver} {arch}".format(
 			ver = platform.python_version(), arch = platform.architecture()[0]))
-	gLogger.info("Tk {ver}".format(ver = tk.Tcl().eval('info patchlevel')))
-	gLogger.info("ReciteWords {ver}".format(ver = version))
+	glogger.info("Tk {ver}".format(ver = tk.Tcl().eval('info patchlevel')))
+	glogger.info("ReciteWords {ver}".format(ver = version))
 
 	try:
 		root = tk.Tk()
 		#root.geometry("800x600")
-		gApp = MyApp(root)
-		SetApp(gApp)
+		gapp = MyApp(root)
+		set_app(gapp)
 		root.mainloop()
 	except Exception as ex:
-		gLogger.error(Exception, ": ", ex)
+		glogger.error(Exception, ": ", ex)
 
 
 class MainFrame(tk.Toplevel):
 	""""""
-	def __init__(self, size):
+	def __init__(self, size: str):
 		"""Constructor"""
-		tk.Toplevel.__init__(self)
+		super().__init__()
 
-		self.__Mode = tk.StringVar()
-		self.__Symbol = tk.StringVar()
-		self.__Score = tk.StringVar()
-		self.__CurCountStr = tk.StringVar()
-		self.__numOfWords = tk.StringVar()
-		self.__numOfLearn = tk.StringVar()
-		self.__numOfTest = tk.StringVar()
+		self._mode: tk.StringVar = tk.StringVar()
+		self._mode.set("Study Mode")
+		self._symbol: tk.StringVar = tk.StringVar()
+		self._symbol.set("")
+		self._score: tk.StringVar = tk.StringVar()
+		self._score.set("")
+		self._curcount_str: tk.StringVar = tk.StringVar()
+		self._curcount_str.set("")
+		self._num_words: tk.StringVar = tk.StringVar()
+		self._num_words.set("")
+		self._num_learn: tk.StringVar = tk.StringVar()
+		self._num_learn.set("_num_learn")
+		self._num_test: tk.StringVar = tk.StringVar()
+		self._num_test.set("_num_test")
 
-		self.__initGUI()
-		self.__initDict()
+		self._word_entry: tk.Entry = tk.Entry(self)
+		self._forgoten_button: tk.Button = tk.Button(self, text = "忘记了！(F6)", command = self._forgoten)
+		self._init_gui()
+		self._init_dict()
 
-		self.bind("<F5>", self.__Play_Again)
-		self.bind("<F6>", self.__Forgoten)
-		self.bind("<F7>", self.__Chop)
+		_ = self.bind("<F5>", self._play_again)
+		_ = self.bind("<F6>", self._forgoten)
+		_ = self.bind("<F7>", self._chop)
 
-		self.protocol('WM_DELETE_WINDOW', self.onCloseWindow)
-
-		self.__Mode.set("Study Mode")
-		self.__Symbol.set("")
-		self.__Score.set("")
-		self.__CurCountStr.set("")
-		self.__numOfWords.set("")
-		self.__numOfLearn.set("__numOfLearn")
-		self.__numOfTest.set("__numOfTest")
+		self.protocol('WM_DELETE_WINDOW', self.on_close_window)
 
 		self.__WordsDict = {}
 
@@ -106,33 +103,31 @@ class MainFrame(tk.Toplevel):
 		self.__ErrCount = 3
 		self.__CurCount = 1
 
-	def __initGUI(self):
+	def _init_gui(self):
 
-		tk.Label(self, textvariable = self.__Mode).grid(row = 0, column = 1)
+		tk.Label(self, textvariable = self._mode).grid(row = 0, column = 1)
 
-		self.__wordInput = tk.Entry(self)
-		self.__wordInput.bind("<Return>", self.__Check_Input)
-		self.__wordInput.focus_set()
-		self.__wordInput.grid(row = 1, column = 1)
+		_ = self._word_entry.bind("<Return>", self._check_input)
+		self._word_entry.focus_set()
+		self._word_entry.grid(row = 1, column = 1)
 
-		tk.Label(self, textvariable = self.__Symbol).grid(row = 2, column = 1)
+		tk.Label(self, textvariable = self._symbol).grid(row = 2, column = 1)
 
         # , state = tk.DISABLED
 		self.__Content = tk.Text(self, height = 12, width = 65)
 		self.__Content.grid(row = 3,  column = 0, columnspan = 3, sticky = tk.W + tk.E + tk.N + tk.S, padx = 5, pady = 5)
 
-		tk.Button(self, text = "再读一遍(F5)", command = self.__Play_Again).grid(row = 4, column = 0)
+		tk.Button(self, text = "再读一遍(F5)", command = self._play_again).grid(row = 4, column = 0)
 		# self.__ForgotenButton = tk.Button(self, text = "忘记了！(F6)", command = self.__Forgoten, state = "disabled")
-		self.__ForgotenButton = tk.Button(self, text = "忘记了！(F6)", command = self.__Forgoten)
-		self.__ForgotenButton.grid(row = 4, column = 1)
+		self._forgoten_button.grid(row = 4, column = 1)
 
-		tk.Button(self, text = "斩！(F7)", command = self.__Chop).grid(row = 4, column = 2)
+		tk.Button(self, text = "斩！(F7)", command = self._chop).grid(row = 4, column = 2)
 
-		tk.Label(self, textvariable = self.__CurCountStr).grid(row = 5, column = 1)
-		tk.Label(self, textvariable = self.__Score).grid(row = 6, column = 1)
-		tk.Label(self, textvariable = self.__numOfLearn).grid(row = 7, column = 0)
-		tk.Label(self, textvariable = self.__numOfWords).grid(row = 7, column = 1)
-		tk.Label(self, textvariable = self.__numOfTest).grid(row = 7, column = 2)
+		tk.Label(self, textvariable = self._curcount_str).grid(row = 5, column = 1)
+		tk.Label(self, textvariable = self._score).grid(row = 6, column = 1)
+		tk.Label(self, textvariable = self._num_learn).grid(row = 7, column = 0)
+		tk.Label(self, textvariable = self._num_words).grid(row = 7, column = 1)
+		tk.Label(self, textvariable = self._num_test).grid(row = 7, column = 2)
 
 		self.update()
 
@@ -150,38 +145,36 @@ class MainFrame(tk.Toplevel):
 		self.title("Study Mode")
 		self.resizable(False, False)
 
-		return "break"
-
-	def __initDict(self):
+	def _init_dict(self):
 		try:
 			curPath = os.getcwd()
-			gLogger.info("curPath: %s" %curPath)
-			dict = gCfg["DictBase"]["DictBase"]["Dict"]
-			dictFile = os.path.join(curPath, dict)
-			gLogger.info("dict: %s" %dictFile)
-			self.__dictBase = SDictBase(dictFile)
+			glogger.info("curPath: %s" %curPath)
+			dict = cast(str, gcfg["DictBase"]["DictBase"]["Dict"])
+			dictfile = os.path.join(curPath, dict)
+			glogger.info("dict: %s" %dictfile)
+			self.__dictBase = SDictBase(dictfile)
 
-			audioCfg = gCfg["DictBase"]["AudioBase"]
+			audioCfg = gcfg["DictBase"]["AudioBase"]
 			audio = audioCfg["Audio"]
 			audioFile = os.path.join(curPath, audio)
-			gLogger.info("audio: %s" %audioFile)
+			glogger.info("audio: %s" %audioFile)
 			compression = audioCfg["Format"]["Compression"]
 			compressLevel = audioCfg["Format"]["Compress Level"]
 			self.__audioBase = AuidoArchive(audioFile, compression, compressLevel)
 
 		except Exception as error:
-			gLogger.error(error)
+			glogger.error(error)
 			self.__Exit_App()
 
 	def __GoStudyMode(self):
 		# global gLogger
 
-		self.__Mode.set("Study Mode")
+		self._mode.set("Study Mode")
 		self.title("Study Mode")
-		gLogger.info("Study Mode")
-		self.__ForgotenButton.config(state = 'disabled')
+		glogger.info("Study Mode")
+		self._forgoten_button.config(state = 'disabled')
 
-		self.__CurCountStr.set("")
+		self._curcount_str.set("")
 
 		self.__CurLearnPos = 0
 		l = len(self.__LearnLst)
@@ -195,7 +188,7 @@ class MainFrame(tk.Toplevel):
 			self.__CurLearnLst = self.__LearnLst[:]
 			self.__LearnLst = []
 
-		self.__numOfLearn.set("%d words to Learn!" %(len(self.__LearnLst)))
+		self._num_learn.set("%d words to Learn!" %(len(self.__LearnLst)))
 		self.__Study_Next()
 
 	def __Study_Next(self):
@@ -206,19 +199,19 @@ class MainFrame(tk.Toplevel):
 			# lastDate = self.__mySDict.GetItem(word, "LastDate")
 			lastDate = self.__usrProgress.GetLastDate(word)
 
-			if lastDate == None: self.__Score.set("New!")
-			else: self.__Score.set("")
+			if lastDate == None: self._score.set("New!")
+			else: self._score.set("")
 
 			# gLogger.info("LearnPos: %d" %(self.__CurLearnPos))
 			# logstr = "LearnWord: %s, familiar: %.2f" %(word, self.__WordsDict[word])
 			# print(type(self.__WordsDict[word]))
-			gLogger.info("LearnWord: %s, familiar: %.1f" %(word, self.__WordsDict[word]))
+			glogger.info("LearnWord: %s, familiar: %.1f" %(word, self.__WordsDict[word]))
 			# gLogger.info(logstr)
 
 			self.__Show_Content(word)
 			self.__Play_MP3(word)
 
-			self.__numOfWords.set(str(self.__CurLearnPos + 1) + " of " + str(l))
+			self._num_words.set(str(self.__CurLearnPos + 1) + " of " + str(l))
 
 			self.__CurLearnPos += 1
 		# else: 
@@ -229,19 +222,19 @@ class MainFrame(tk.Toplevel):
 	def __GoTestMode(self):
 		# global gLogger
 
-		self.__Mode.set("Test Mode")
+		self._mode.set("Test Mode")
 		self.title("Test Mode")
-		gLogger.info("Test Mode")
-		self.__ForgotenButton.config(state = 'normal')
+		glogger.info("Test Mode")
+		self._forgoten_button.config(state = 'normal')
 
 		if self.__CurCount <= self.__TestCount:
 			#self.__CurCount += 1
-			self.__CurCountStr.set("Count: %d of %d" %(self.__CurCount, self.__TestCount))
+			self._curcount_str.set("Count: %d of %d" %(self.__CurCount, self.__TestCount))
 			self.__CurTestPos = 0
 			self.__Clear_Content()
 			# random.shuffle(self.__CurTestLst)
 
-			self.__numOfTest.set("%d words to Test!" %(len(self.__TestLst)))
+			self._num_test.set("%d words to Test!" %(len(self.__TestLst)))
 			self.__Test_Next()
 		elif len(self.__CurLearnLst) > 0: 
 			# random.shuffle(self.__LearnLst)
@@ -271,7 +264,7 @@ class MainFrame(tk.Toplevel):
 
 		# gLogger.info("TestPos: %d" %(self.__CurTestPos))
 		word = self.__CurTestLst[self.__CurTestPos]
-		gLogger.info("TestWord: %s, familiar: %.1f" %(word, self.__WordsDict[word]))
+		glogger.info("TestWord: %s, familiar: %.1f" %(word, self.__WordsDict[word]))
 
 		self.__Play_MP3(word)
 
@@ -280,23 +273,23 @@ class MainFrame(tk.Toplevel):
 		else: lastWord = self.__CurTestLst[-1]
 
 		if not(self.__CurTestPos == 0 and self.__CurCount == 1): self.__Show_Content(lastWord)
-		self.__wordInput.delete(0, tk.END)
+		self._word_entry.delete(0, tk.END)
 
-		self.__numOfWords.set(str(self.__CurTestPos + 1) + " of " + str(len(self.__CurTestLst)))
+		self._num_words.set(str(self.__CurTestPos + 1) + " of " + str(len(self.__CurTestLst)))
 
 		self.__CurTestPos += 1
 
-	def __Check_Input(self, event = None):
+	def _check_input(self, event = None):
 
 		#self.__numOfLearn.set("%d words to Learn!" %(len(self.__LearnLst)))
 		#self.__numOfTest.set("%d words to Test!" %(len(self.__TestLst)))
 
-		if self.__Mode.get() == "Study Mode":
+		if self._mode.get() == "Study Mode":
 			if self.__CurLearnPos < len(self.__CurLearnLst):
 				self.__Study_Next()
 			else:
 				self.__CurCount = 1
-				gLogger.info("curCount: %d" %(self.__CurCount))
+				glogger.info("curCount: %d" %(self.__CurCount))
 				self.__CurTestLst = self.__CurLearnLst[:]
 				self.__GoTestMode()
 				# self.__LearnLst = []
@@ -306,15 +299,15 @@ class MainFrame(tk.Toplevel):
 				# random.shuffle(self.__TestLst)
 				# self.__Test_Next()
 		else:
-			input_word = self.__wordInput.get()
+			input_word = self._word_entry.get()
 			word = self.__CurTestLst[self.__CurTestPos - 1]
 			if input_word != word: 
 				# self.__WordsDict[word] -= 1
-				self.__Score.set("Wrong!")
+				self._score.set("Wrong!")
 				# self.__LearnLst.append(word)
-				self.__numOfLearn.set("%d words to Learn!" %(len(self.__LearnLst)))
-				gLogger.info("ErrCount: %d", self.__ErrCount)
-				gLogger.info("Right word: %s, Wrong word: %s." %(word, input_word))
+				self._num_learn.set("%d words to Learn!" %(len(self.__LearnLst)))
+				glogger.info("ErrCount: %d", self.__ErrCount)
+				glogger.info("Right word: %s, Wrong word: %s." %(word, input_word))
 				if self.__ErrCount == 3:
 					self.__CurTestPos -= 1
 					self.__ErrCount -= 1
@@ -330,31 +323,31 @@ class MainFrame(tk.Toplevel):
 					#self.__CurTestPos -= 1
 					self.__Play_MP3(word)
 					self.__Show_Content(word)
-					self.__wordInput.delete(0, tk.END)
-					self.__wordInput.insert(tk.END, word)
-					self.__Score.set("Go on!")
+					self._word_entry.delete(0, tk.END)
+					self._word_entry.insert(tk.END, word)
+					self._score.set("Go on!")
 					# gLogger.info("LearnLst = " + "".join(list(str(self.__LearnLst))))
 					self.__WordsDict[word] -= 1
 					self.__LearnLst.append(word)
-					gLogger.info(word + " has been added in learn list.")
+					glogger.info(word + " has been added in learn list.")
 					return
 			else: 
-				self.__Score.set("OK!")
+				self._score.set("OK!")
 				self.__ErrCount = 3
 
 			if self.__CurTestPos < len(self.__CurTestLst):
-				self.__wordInput.delete(0, tk.END)
+				self._word_entry.delete(0, tk.END)
 				self.__Test_Next()
 			else: 
 				self.__CurCount += 1
-				gLogger.info("curCount: %d" %(self.__CurCount))
+				glogger.info("curCount: %d" %(self.__CurCount))
 				self.__GoTestMode()
 
-	def __Chop(self, event = None):
+	def _chop(self, event = None):
 		# global gLogger
 
 		word = ""
-		if self.__Mode.get() == "Study Mode": 
+		if self._mode.get() == "Study Mode": 
 			self.__CurLearnPos -= 1
 			if self.__CurLearnPos <= 0: self.__CurLearnPos = 0
 			word = self.__CurLearnLst[self.__CurLearnPos]
@@ -380,7 +373,7 @@ class MainFrame(tk.Toplevel):
 				self.__Study_Next()
 			else: 
 				self.__CurCount = 1
-				gLogger.info("curCount: %d" %(self.__CurCount))
+				glogger.info("curCount: %d" %(self.__CurCount))
 				self.__CurTestLst = self.__CurLearnLst[:]
 				self.__GoTestMode()
 
@@ -410,19 +403,19 @@ class MainFrame(tk.Toplevel):
 				self.__Test_Next()
 			else: 
 				self.__CurCount += 1
-				gLogger.info("curCount: %d" %(self.__CurCount))
+				glogger.info("curCount: %d" %(self.__CurCount))
 				self.__GoTestMode()
 
 		self.__WordsDict[word] = 10
 
-		gLogger.info("%s has been chopped!" %(word))
+		glogger.info("%s has been chopped!" %(word))
 
-	def __Forgoten(self, event = None):
+	def _forgoten(self, event = None):
 		# global gLogger
 
 		word = ""
 
-		if self.__Mode.get() == "Test Mode":
+		if self._mode.get() == "Test Mode":
 			self.__CurTestPos -= 1
 			if self.__CurTestPos <= 0: self.__CurTestPos = 0
 			word = self.__CurTestLst[self.__CurTestPos]
@@ -436,13 +429,13 @@ class MainFrame(tk.Toplevel):
 			self.__WordsDict[word] -= 5
 			self.__LearnLst.append(word)
 
-			gLogger.info(word + " is forgotten!")
+			glogger.info(word + " is forgotten!")
 
 			if self.__CurTestPos < len(self.__CurTestLst):
 				self.__Test_Next()
 			else: 
 				self.__CurCount += 1
-				gLogger.info("curCount: %d" %(self.__CurCount))
+				glogger.info("curCount: %d" %(self.__CurCount))
 				self.__GoTestMode()
 
 		#self.__WordsDict.pop(word)
@@ -459,13 +452,13 @@ class MainFrame(tk.Toplevel):
 		return word
 
 	def __Clear_Content(self):
-		self.__wordInput.delete(0, tk.END)
-		self.__Symbol.set("")
+		self._word_entry.delete(0, tk.END)
+		self._symbol.set("")
 		self.__Content.delete(1.0, tk.END)
 
-	def __Play_Again(self, event = None):
+	def _play_again(self, event = None):
 		word = ""
-		if self.__Mode.get() == "Study Mode": 
+		if self._mode.get() == "Study Mode": 
 			word = self.__CurLearnLst[self.__CurLearnPos - 1]
 		else: 
 			word = self.__CurTestLst[self.__CurTestPos - 1]
@@ -477,20 +470,21 @@ class MainFrame(tk.Toplevel):
 		# mp3 = os.path.join(sys.path[0], "audio", "Google", word[0], word + ".mp3")
 		bAudioOK, audio = self.__audioBase.query_audio(word)
 		if (bAudioOK == False):
-			gLogger.error(audio)
+			glogger.error(audio)
 			return False
 
-		if (IsWindows() == True):
-			import mp3play
+		if is_windows():
 			try:
 				clip = mp3play.load(audio)
 				clip.play()
 				time.sleep(min(30, clip.seconds() + 0.3))
+				# time.sleep(min(30, clip.seconds()))		# Win10
+				time.sleep(min(30, clip.seconds() + 0.5))	# WinXp
 				clip.stop()
 			except:
-				gLogger.error("Wrong mp3: " + audio)
+				glogger.error("Wrong mp3: " + audio)
 				return False
-		elif (IsLinux() == True):
+		elif is_linux():
 			os.system("mplayer " + audio)
 
 		return True
@@ -502,14 +496,14 @@ class MainFrame(tk.Toplevel):
 		if word in self.__audioFile.namelist():
 			mp3 = self.__audioFile.read(word)
 		else:
-			gLogger.error("Can't find %s." %(word))
+			glogger.error("Can't find %s." %(word))
 			return False
 
 		#2.创建合成器对象，解析出最初的几帧音频数据
 		import pymedia.muxer as muxer
 		dm = muxer.Demuxer('mp3')
 		frames = dm.parse(mp3)
-		gLogger.info(len(frames))
+		glogger.info(len(frames))
 
 		#3.根据解析出来的 Mp3 编码信息，创建解码器对象
 		import pymedia.audio.acodec as acodec
@@ -523,7 +517,7 @@ class MainFrame(tk.Toplevel):
 		#音频数据在 frame 数组的第二个元素中
 		#r = dec.decode(frame[1])
 		r = dec.decode(mp3)
-		gLogger.info("sample_rate:%s, channels:%s" %(r.sample_rate,r.channels))
+		glogger.info("sample_rate:%s, channels:%s" %(r.sample_rate,r.channels))
 		#注意：这一步可以直接解码 r = dec.decode(data)，而不用读出第一帧音频数据
 		#但是开始会有一下噪音，如果是网络流纯音频数据，不包含标签信息，则不会出现杂音
 
@@ -532,7 +526,8 @@ class MainFrame(tk.Toplevel):
 		snd = sound.Output(r.sample_rate, r.channels, sound.AFMT_S16_LE)
 
 		#6.播放
-		if r: snd.play(r.data)
+		if r:
+			snd.play(r.data)
 
 		# #7.继续读取、解码、播放
 		# while True:
@@ -550,7 +545,7 @@ class MainFrame(tk.Toplevel):
 	def __Show_Content(self, word):
 
 		self.__Clear_Content()
-		self.__wordInput.insert(tk.END, word)
+		self._word_entry.insert(tk.END, word)
 
 		# txtLst = []
 
@@ -562,7 +557,7 @@ class MainFrame(tk.Toplevel):
 			if symbol:
 				# self.__Content.insert(END, symbol.strip())
 				# self.__Content.insert(END, "\r\n")
-				self.__Symbol.set("[" + symbol + "]")
+				self._symbol.set("[" + symbol + "]")
 
 			meaning = txtLst[2]
 
@@ -587,22 +582,22 @@ class MainFrame(tk.Toplevel):
 		self.__today = datetime.date.strftime(datetime.date.today(), "%Y-%m-%d")
 
 		# print(gCfg)
-		gLogger.info("Go!")
+		glogger.info("Go!")
 
-		allLimit = gCfg["General"]["Limit"]
-		newWdsLimit = gCfg["StudyMode"]["Limit"]
-		self.__TestCount = gCfg["TestMode"]["Times"]
+		allLimit = gcfg["General"]["Limit"]
+		newWdsLimit = gcfg["StudyMode"]["Limit"]
+		self.__TestCount = gcfg["TestMode"]["Times"]
 
 		# read user
 
-		selectUser = gCfg["User"]["LastUser"]
-		usrCfg = gCfg["User"]["Users"][selectUser - 1]
+		selectUser = gcfg["User"]["LastUser"]
+		usrCfg = gcfg["User"]["Users"][selectUser - 1]
 		name = usrCfg["Name"]
-		gLogger.info("selectUser: %s" %name)
+		glogger.info("Select User: %s" %name)
 		curPath = os.getcwd()
 		progress = usrCfg["Progress"]
 		progressFile = os.path.join(curPath, progress)
-		gLogger.info("progress: %s" %progressFile)
+		glogger.info("progress: %s" %progressFile)
 		self.__usrProgress = UsrProgress()
 		self.__usrProgress.Open(progressFile)
 
@@ -622,7 +617,7 @@ class MainFrame(tk.Toplevel):
 		# where = "level = '" + level + "' and familiar = 10"
 		finishCount = self.__usrProgress.GetFnshedCount(level)
 
-		gApp.update_count(allCount, needCount, newCount, finishCount)
+		gapp.update_count(allCount, needCount, newCount, finishCount)
 
 		self.__LearnLst = []
 		self.__TestLst = []
@@ -669,19 +664,19 @@ class MainFrame(tk.Toplevel):
 		for wd in forgottenWdsLst: newWdsLst.remove(wd)
 
 		self.__LearnLst.extend(forgottenWdsLst)
-		gLogger.info("length of forgotten words: %d." %(len(forgottenWdsLst)))
-		gLogger.info("length of new words: %d." %(len(newWdsLst)))
+		glogger.info("length of forgotten words: %d." %(len(forgottenWdsLst)))
+		glogger.info("length of new words: %d." %(len(newWdsLst)))
 
 		#get old words
 		timeDayLst = []
-		timeArray = gCfg["TimeInterval"]
+		timeArray = gcfg["TimeInterval"]
 		for timeGroup in timeArray:
 			if(timeGroup["Unit"] == "d"):
 				timeDayLst.append(timeGroup["Interval"])
 
 		timeDayLst = timeDayLst[::-1]		# reverse list
 		# gLogger.info("timeDayLst: ", timeDayLst)
-		gLogger.info("timeDayLst = " + "".join(list(str(timeDayLst))))
+		glogger.info("timeDayLst = " + "".join(list(str(timeDayLst))))
 
 		oldWordsLimit = allLimit - len(self.__LearnLst)
 
@@ -742,7 +737,7 @@ class MainFrame(tk.Toplevel):
 		self.__TestLst.extend(self.__LearnLst)
 
 		words_len = allLimit - len(self.__TestLst)
-		gLogger.info("left %d words for new" %words_len)
+		glogger.info("left %d words for new" %words_len)
 
 		if words_len > 0: 
 			self.__TestLst.extend(newWdsLst[:words_len - 1])
@@ -753,26 +748,26 @@ class MainFrame(tk.Toplevel):
 
 		random.shuffle(self.__LearnLst)
 
-		gLogger.info("len of all TestWordsList: %d." %(len(self.__TestLst)))
+		glogger.info("len of all TestWordsList: %d." %(len(self.__TestLst)))
 		self.__TestLst = list(set(self.__TestLst))	# remove duplicate item 
-		gLogger.info("len of no repeat all TestWordsList: %d." %(len(self.__TestLst)))
+		glogger.info("len of no repeat all TestWordsList: %d." %(len(self.__TestLst)))
 		# gLogger.info("WordsDict = " + str(self.__WordsDict))
 		# gLogger.info("len of WordsDict: %d: " %(len(self.__WordsDict)))
 		# gLogger.info(self.__LearnLst)
 		# gLogger.info("LearnLst = " + "".join(list(str(self.__LearnLst))))
-		gLogger.info("len of LearnList: %d." %(len(self.__LearnLst)))
+		glogger.info("len of LearnList: %d." %(len(self.__LearnLst)))
 		#self.__wordInput['state'] = 'readonly'
 
-		self.__numOfLearn.set("%d words to Learn!" %(len(self.__LearnLst)))
-		self.__numOfTest.set("%d words to Test!" %(len(self.__TestLst)))
+		self._num_learn.set("%d words to Learn!" %(len(self.__LearnLst)))
+		self._num_test.set("%d words to Test!" %(len(self.__TestLst)))
 		self.__GoStudyMode()
 
 	def __Save_Progress(self):
 		# global gLogger
 
 		#gLogger.info("WordsDict: ", self.__WordsDict)
-		gLogger.info("len of self.__WordsDict: %d" %len(self.__WordsDict))
-		gLogger.info("WordsDict = " + str(self.__WordsDict))
+		glogger.info("len of self.__WordsDict: %d" %len(self.__WordsDict))
+		glogger.info("WordsDict = " + str(self.__WordsDict))
 
 		# today = datetime.date.strftime(datetime.date.today(), "%Y-%m-%d")
 
@@ -784,15 +779,15 @@ class MainFrame(tk.Toplevel):
 			# if self.__WordsDict[word] != None: del self.__WordsDict[word]
 			if word in self.__WordsDict: del self.__WordsDict[word]
 			
-		if self.__Mode.get() == "Study Mode": 
+		if self._mode.get() == "Study Mode": 
 			for word in self.__CurLearnLst:
 				if word in self.__WordsDict: del self.__WordsDict[word]
 		else:
 			for word in self.__CurTestLst: 
 				if word in self.__WordsDict: del self.__WordsDict[word]
 
-		gLogger.info("len of self.__WordsDict: %d" %len(self.__WordsDict))
-		gLogger.info("WordsDict = " + str(self.__WordsDict))
+		glogger.info("len of self.__WordsDict: %d" %len(self.__WordsDict))
+		glogger.info("WordsDict = " + str(self.__WordsDict))
 
 		for word, familiar in self.__WordsDict.items():
 
@@ -810,8 +805,8 @@ class MainFrame(tk.Toplevel):
 		# gLogger.info("LearnWordsList: ")
 		# gLogger.info(self.__LearnLst)
 
-	def onCloseWindow(self):
-		result = msgBox.askyesno(self.__Mode.get(), "Are you going to quit?")
+	def on_close_window(self):
+		result = msgBox.askyesno(self._mode.get(), "Are you going to quit?")
 		if result == True: 
 			self.__Save_Progress()
 			self.__Exit_App()
@@ -912,7 +907,7 @@ class MyApp(object):
 			# self.__mainFrame.onCloseWindow()
 		# else: return
 
-		self.__mainFrame.onCloseWindow()
+		self.__mainFrame.on_close_window()
 		return
  
 	def __show(self):

@@ -55,6 +55,7 @@ class MainFrame(tk.Frame):
 
 		# To-Do
 		DPI_scaling = self.__getDPI()
+		gLogger.info("DPI_scaling: %f" %DPI_scaling)
 		width *= DPI_scaling
 		height *= DPI_scaling
 		self.master.title("Dictionary")
@@ -93,12 +94,13 @@ class MainFrame(tk.Frame):
 		self.__winOK = True
 
 	def __getDPI(self):
+		# return 1.2515
 		if IsWindows():
 			from ctypes import windll
 			hDC = windll.user32.GetDC(0)
 			LOGPIXELSX = 88
-			dpi = windll.gdi32.GetDeviceCaps(hDC, LOGPIXELSX)/96
-			gLogger.info("DPI is %f" %dpi)
+			dpi = windll.gdi32.GetDeviceCaps(hDC, LOGPIXELSX)/96.0
+			# gLogger.info("DPI is %f" %dpi)
 			return dpi
 		elif IsLinux():
 			return 1.256
@@ -142,18 +144,16 @@ class MainFrame(tk.Frame):
 			self.__root.after(10, lambda: self.__root.wm_deiconify())
 
 	def __on_root_configure(self, _):
-
 		gLogger.debug("MainFrame.on_root_configure")
 		if self.__browser_frame:
 			self.__browser_frame.on_root_configure()
 
 	def __on_configure(self, event):
-
 		gLogger.debug("MainFrame.on_configure")
 		if self.__browser_frame:
 			width = event.width
 			height = event.height
-
+			# gLogger.info("width: %f height: %f" %(width, height))
 			self.__browser_frame.on_mainframe_configure(width, height)
 
 	def __on_close(self):
@@ -449,8 +449,10 @@ class RequestHandler(object):
 class dictApp():
 
 	def __init__(self):
-		self._cfgDictFile = ""
-		self._cfgDict = None
+		self.__cfgDictFile = ""
+		self.__cfgDict = None
+		self.__bCfgModfied = False
+
 		# self.__opener = None
 
 		# self.__dictBaseLst = []
@@ -476,8 +478,9 @@ class dictApp():
 		print("dict App del!")
 
 	def StartAndRun(self):
-		self._cfgDictFile = os.path.join(os.getcwd(), "Dictionary.json")
-		self.__ReadConfigure()
+
+		self.__cfgDictFile = os.path.join(os.getcwd(), "Dictionary.json")
+		self.__ReadAndConfigure()
 
 	def __Start(self, width, height, fileURL, showHiRatio, showWiRatio):
 		sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
@@ -524,7 +527,8 @@ class dictApp():
 
 		self.__auidoArchive.close()
 
-		self.__SaveConfigure()
+		if self.__bCfgModfied:
+			self.__SaveConfigure()
 
 	def navigate_home(self):
 		self.__bHomeRdy = False
@@ -537,7 +541,7 @@ class dictApp():
 		bIEAgent = False
 		opener = None
 		gLogger.info("activeAgent = %s" %activeAgent)
-		self._cfgDict["Agents"]["activeAgent"] = activeAgent
+		self.__cfgDict["Agents"]["activeAgent"] = activeAgent
 		for name in self.__dictAgent.keys():
 			if name == activeAgent:
 				self.__dictAgent[name]["bActived"] = True
@@ -568,6 +572,8 @@ class dictApp():
 		if proxies:
 			gLogger.info("proxies: " + str(proxies))
 
+		self.__bCfgModfied = True
+
 	def __AddAudio(self, name, audioPackage):
 		self.__auidoArchive = audioPackage
 
@@ -592,39 +598,34 @@ class dictApp():
 		html = '''\n							<div id = "toggle_example" align = "right">- Hide Examples</div>
 							<p></p>'''
 		for dictId, item in self.__dictBaseDict.items():
-			gLogger.info("addTab: %s: %s" %(dictId, item["name"]))
+			gLogger.info("addTab: %s, %s" %(dictId, item["name"]))
 			self.get_browser().ExecuteFunction("addTab", dictId, item["name"], html)
 			self.__dictId = dictId
 
-		self.get_browser().ExecuteFunction("bindSwitchTab");
+		self.get_browser().ExecuteFunction("bindSwitchTab")
 
 		# switch to dict1
 		self.__dictId = "dict1"
 		self.__curDictBase = self.get_curDB()
 		self.__dictParseFun = self.__curDictBase.get_parseFun()
-		self.get_browser().ExecuteFunction("active_Tab", self.__dictId);
+		self.get_browser().ExecuteFunction("activeTab", self.__dictId)
 
 		self.__curDictBase = self.get_curDB()
 
 		self.__bHomeRdy = True
-		# if self.__word != None:
-			# self.get_browser().ExecuteFunction("set_word", self.__word);
-			# self.get_browser().ExecuteFunction("query_word");
-			# self.query_word(self.__word)
 
 	def __AddMenu(self, name, action, bActived = False):
 		self.__dictSysMenu.update({name: action})
 		# menuId = "dict" + str(len(self.__dictSysMenu) + 1)
 		menuId = name
-		self.get_browser().ExecuteFunction("fill_menu", menuId, name);
+		self.get_browser().ExecuteFunction("fill_menu", menuId, name)
 		if bActived:
 			gLogger.info("Active Menu: %s" %menuId)
-			self.get_browser().ExecuteFunction("active_menu", menuId);
+			self.get_browser().ExecuteFunction("active_menu", menuId)
 
 	def fill_menus(self):
 		for key in self.__dictAgent.keys():
 			self.__AddMenu(key, "ActiveAgent", self.__dictAgent[key]["bActived"])
-		# self.add_menu("None", "active_agent")
 		self.get_browser().ExecuteFunction("bindMenus");
 
 	def get_browser(self):
@@ -646,12 +647,12 @@ class dictApp():
 		return True
 
 	def __dwf_callbackfunc(self, blocknum, blocksize, totalsize):
-		# global gLogger
+		''' 回调函数
 
-		'''回调函数
-		@blocknum: 已经下载的数据块
-		@blocksize: 数据块的大小
-		@totalsize: 远程文件的大小
+		Args:
+			blocknum: 已经下载的数据块
+			blocksize: 数据块的大小
+			totalsize: 远程文件的大小
 		'''
 		percent = 100.0 * blocknum * blocksize / totalsize
 		if percent > 100: percent = 100
@@ -765,7 +766,8 @@ class dictApp():
 
 		if(not bDictOK):
 			gLogger.error("dict: " + dict)
-			self.__RecordMissDict(word, dict)
+			# self.__RecordMissDict(word, dict)
+			self.__RecordMissDict("Dict of " + word + ": " + dict + "\n")
 			dict = '{\n' + \
 					'	"query": "' + word +  '",\n' + \
 					'	"sourceLanguage": "en",\n' + \
@@ -791,8 +793,11 @@ class dictApp():
 
 		if(not bAudioOK):
 			gLogger.error("audio: " + audio)
-			self.__RecordMissAudio(word, audio)
+			# self.__RecordMissAudio(word, audio)
+			self.__RecordMissDict("Audio of " + word + ": " + audio + "\n\n")
 			audio = os.path.join(os.getcwd(), "audio", "WrongHint.mp3")
+		elif(not bDictOK):
+			self.__RecordMissDict("\n")
 
 		# tabId = "dict" + str(self.__nTab + 1)
 		# gLogger.info("tabId: " + tabId)
@@ -839,14 +844,16 @@ class dictApp():
 		self.__miss_dict = miss_dict
 		self.__miss_audio = miss_audio
 
-	def __RecordMissDict(self, word, why):
+	def __RecordMissDict(self, something):
 		with open(self.__miss_dict, mode = "a") as f:
-			f.write(word + ": " + why + "\n")
+			# f.write(word + ": " + why + "\n")
+			f.write(something)
 
-	def __RecordMissAudio(self, word, why):
+	def __RecordMissAudio(self, something):
 		# self.__miss_audio.write(word + ": " + why + "\r\n")
 		with open(self.__miss_audio, mode = "a") as f:
-			f.write(word + ": " + why + "\n\n")
+			# f.write(word + ": " + why + "\n\n")
+			f.write(something)
 
 	'''
 	def speechWord(self, word, isUs):
@@ -911,17 +918,17 @@ class dictApp():
 			outFile.write(html)
 			outFile.close()
 
-	def __ReadConfigure(self):
+	def __ReadAndConfigure(self):
 		global gLogger
-		with open(self._cfgDictFile, 'rb') as f:
+		with open(self.__cfgDictFile, 'rb') as f:
 			datum = f.read()
-		self._cfgDict = json.loads(datum, strict = False)
+		self.__cfgDict = json.loads(datum, strict = False)
 
-		version = self._cfgDict["common"]["ver"]
+		version = self.__cfgDict["common"]["ver"]
 		'''
 		logging 用作记录日志，默认分为六种日志级别（括号为级别对应的数值），NOTSET（0）、DEBUG（10）、INFO（20）、WARNING（30）、ERROR（40）、CRITICAL（50）。logging执行时输出大于等于设置的日志级别的日志信息
 		'''
-		bDebug = self._cfgDict["Debug"]["bEnable"]
+		bDebug = self.__cfgDict["Debug"]["bEnable"]
 		if bDebug:
 			level = logging.DEBUG
 		else:
@@ -929,7 +936,7 @@ class dictApp():
 		
 		curPath = os.getcwd()
 
-		logFile = self._cfgDict["Debug"]["file"]
+		logFile = self.__cfgDict["Debug"]["file"]
 		lFile = os.path.join(curPath, logFile)
 
 		gLogger = create_logger("Dictionary", lFile, level)
@@ -951,10 +958,10 @@ class dictApp():
 		gLogger.info("Tk v{ver}".format(ver = tk.Tcl().eval('info patchlevel')))
 		gLogger.info("Dictionary v{ver}".format(ver = version))
 
-		bIEAgent = self._cfgDict["Agents"]["bIEAgent"]
-		activeAgent = self._cfgDict["Agents"]["activeAgent"]
+		bIEAgent = self.__cfgDict["Agents"]["bIEAgent"]
+		activeAgent = self.__cfgDict["Agents"]["activeAgent"]
 
-		for agent in self._cfgDict["Agents"]["Info"]:
+		for agent in self.__cfgDict["Agents"]["Info"]:
 			name = agent["Name"]
 			ip = agent["IP"]
 			program = agent["Program"]
@@ -963,14 +970,14 @@ class dictApp():
 		# self.__ActiveAgent(activeAgent)
 		self.ActiveAgent(activeAgent)
 
-		for tabGroup in self._cfgDict["Tabs"]:
+		for tabGroup in self.__cfgDict["Tabs"]:
 			name = tabGroup["Name"]
 			dict = tabGroup["Dict"]
 			format = tabGroup["Format"]
 			dictSrc = os.path.join(curPath, dict)
 			self.__AddDictBase(name, dictSrc, format)
 
-		audioGroup = self._cfgDict["Audio"][0]
+		audioGroup = self.__cfgDict["Audio"][0]
 		name = audioGroup["Name"]
 		audio = audioGroup["Audio"]
 		audioFile = os.path.join(curPath, audio)
@@ -984,26 +991,28 @@ class dictApp():
 
 		self.__AddAudio(name, audioPackage)
 	 
-		miss_dict = os.path.join(curPath, self._cfgDict["Miss"]["miss_dict"])
-		miss_audio = os.path.join(curPath, self._cfgDict["Miss"]["miss_audio"])
+		miss_dict = os.path.join(curPath, self.__cfgDict["Miss"]["miss_dict"])
+		miss_audio = os.path.join(curPath, self.__cfgDict["Miss"]["miss_audio"])
 		self.__SetMissRecordFile(miss_dict, miss_audio)
 
-		width = int(self._cfgDict["GUI"]["Width"])
-		height = int(self._cfgDict["GUI"]["Height"])
-		fileURL = os.path.join(curPath, self._cfgDict["GUI"]["html"])
+		self.__bCfgModfied = False
 
-		showHiRatio = float(self._cfgDict["GUI"]["ShowHiRatio"])
-		showWiRatio = float(self._cfgDict["GUI"]["ShowWiRatio"])
+		width = int(self.__cfgDict["GUI"]["Width"])
+		height = int(self.__cfgDict["GUI"]["Height"])
+		fileURL = os.path.join(curPath, self.__cfgDict["GUI"]["html"])
+
+		showHiRatio = float(self.__cfgDict["GUI"]["ShowHiRatio"])
+		showWiRatio = float(self.__cfgDict["GUI"]["ShowWiRatio"])
 
 		self.__Start(width, height, fileURL, showHiRatio, showWiRatio)	
 
 	def __SaveConfigure(self):
 		gLogger.info("save configure")
 
-		# jsonStr = json.dumps(self._cfgDict)
-		with open(self._cfgDictFile, 'w') as f:
+		# jsonStr = json.dumps(self.__cfgDict)
+		with open(self.__cfgDictFile, 'w') as f:
 			# f.write(jsonStr)
-			json.dump(self._cfgDict, f, indent=4)
+			json.dump(self.__cfgDict, f, indent = 4)
 
 def main():
 

@@ -22,7 +22,21 @@ Known Bugs:
 * when disable title, can't input word in Ubuntu 18.04, see https://exceptionshub.com/tkinters-overideredirect-prevents-certain-events-in-mac-and-linux.html
 * SDictBase doesn't display well
 * close button can't trigger __del__
+
+
+v1.0.1.4
+* support phase
+* support word with capital of first letter						OK
+* auto record/lookup wrong word dict							OK
+* hint of download progress
+* word list in left side sort by alphabet
+
+Bugs Fixed:
+* optimize the style of miss.txt								OK
+* optimize write logic of json cfg								OK
+* illegal letter "["
 * when trigger "entry://can", it won't pronounce automatically
+* size doesn't fit with High DPI
 
 
 v1.0.1.3

@@ -4,7 +4,7 @@
 #coding=utf-8
 import abc
 
-from src.globalvar import GetLogger
+from src.globalvar import get_logger
 
 
 class DictBase(metaclass = abc.ABCMeta):
