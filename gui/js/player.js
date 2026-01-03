@@ -4,7 +4,7 @@ $(document).ready(function(){
 
 function loadPlayer(){
 	$('[id=playpause]').each(function(n){
-		console.log("add click: ", $(this));
+		// console.log("add click: ", $(this));
 		$(this).click(function(){
 			// audio = document.getElementById('myaudio');
 			// document.getElementsByClassName('d');
@@ -34,7 +34,7 @@ function loadPlayer(){
 	});
 
 	$("audio").each(function(i){
-		console.log("addEventListener: " + $(this).html())
+		// console.log("addEventListener: " + $(this).html())
 		$(this)[0].addEventListener("play", function() {
 			var btn = $(this).prev()
 			// console.log("addPlayEventListener: ", btn);

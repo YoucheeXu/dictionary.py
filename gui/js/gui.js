@@ -1,4 +1,8 @@
+gGUICSS = null;
 $(document).ready(function () {
+	// console.log("#btn_prev:" + $("#btn_prev:disabled").css('background-position-x'));
+	// console.log("#btn_next:" + $("#btn_next:disabled").css('background-position-x'));
+
     // top_panel
     initButton3("btn_menu", "./skin/menu_btn.bmp", 31, 21);
     initButton3("btn_min", "./skin/minimize_btn.bmp", 33, 21);
@@ -7,22 +11,22 @@ $(document).ready(function () {
     initButton3("btn_close", "./skin/close_btn.bmp", 43, 21);
 
     // input_panel
-	initButton3("btn_prev", "./skin/prev_btn.bmp", 45, 37);
-    initButton3("btn_next", "./skin/next_btn.bmp", 40, 37);
+	initButton4("btn_prev", "./skin/prev_btn.bmp", 45, 37);
+    initButton4("btn_next", "./skin/next_btn.bmp", 40, 37);
     initButton3("btn_del", "./skin/delete_item.bmp", 30, 34);
     initButton3("btn_drop", "./skin/combobox_drop_btn.bmp", 20, 34);
     initButton3("btn_lookup", "./skin/lookup_btn.bmp", 110, 37);
 
 	// double click to query word
 	document.addEventListener('dblclick', function(e){
-
 		// console.log("Dobule Click!");
 		// console.log(e);
 		// console.log(e.target.id);
 		if ("word_input" == e.target.id) return;
 
-		var word = (document.selection && document.selection.createRange().text) ||
-             (window.getSelection && window.getSelection().toString());
+		var word = (document.selection && 
+			document.selection.createRange().text) ||
+			(window.getSelection && window.getSelection().toString());
 		// log("info", "dblclick: " + word, false);
 		word = word.trim();
 		set_word(word);
@@ -35,46 +39,80 @@ $(document).ready(function () {
 
 	// addTab("tab1", "tab1-haah", "");
 	// addTab("tab2", "tab2-haah", "");
+
+	// console.log("#btn_prev:" + $("#btn_prev:disabled").css('background-position-x'));
+	// console.log("#btn_next:" + $("#btn_next:disabled").css('background-position-x'));
 });
 
-function disableButton(id, is) {
-    if(is == true){
-        $("#"+id).attr('disabled', 'disabled');
-    }
-    else $("#"+id).removeAttribute("disabled");
-};
-
-function hideButton(id, is) {
-    if(is == true){
-        $("#"+id).hide();
-    }
-    else $("#"+id).show();
-};
-
 function initButton3(id, img, width, height){
-    $("#"+id).css("background", "url(" + img + ")");
-    $("#"+id).css('width', width);
-    $("#"+id).css('height', height);
-    $("#"+id).css('outline', 'none');
-    $("#"+id).css('background-position', '0px 0px');
-    $("#"+id).hover(function(){
+    $("#" + id).css("background", "url(" + img + ")");
+    $("#" + id).css('width', width);
+    $("#" + id).css('height', height);
+    $("#" + id).css('outline', 'none');
+    $("#" + id).css('background-position', '0px 0px');
+    $("#" + id).hover(function(){
         $(this).css('background-position-x', -1 * width);
     }, function(){
             $(this).css('background-position-x', 0);
         }
     );
-    $("#"+id).mousedown(function(){
+    $("#" + id).mousedown(function(){
             $(this).css('background-position-x', -2 * width);
-        });
-    $("#"+id).mouseup(function(){
+        }
+	);
+    $("#" + id).mouseup(function(){
             $(this).css('background-position-x', -1 * width);
-        });
-    // <!-- $("#"+id).disabled(function(){ -->
-        // <!-- $(this).css('background-position-x', -3 * width); -->
-    // <!-- }, function(){ -->
-        // <!-- $(this).css('background-position-x', 0); -->
-    // <!-- }); -->
-    // alert($("#btn_prev").css('hover'));
+        }
+	);
+}
+
+function initButton4(id, img, width, height){
+    $("#" + id).css("background", "url(" + img + ")");
+    $("#" + id).css('width', width);
+    $("#" + id).css('height', height);
+    $("#" + id).css('outline', 'none');
+    $("#" + id).css('background-position', '0px 0px');
+
+    $("#" + id).hover(function(){
+        $(this).css('background-position-x', -1 * width);
+    }, function(){
+            $(this).css('background-position-x', 0);
+        }
+    );
+    $("#" + id).mousedown(function(){
+            $(this).css('background-position-x', -2 * width);
+        }
+	);
+    $("#" + id).mouseup(function(){
+            $(this).css('background-position-x', -1 * width);
+        }
+	);
+
+	// TODO: statements follow do not work as expection
+	// console.log("#" + id + ":" + $("#" + id + ":disabled").css('background-position-x'));
+	$("#" + id + ":disabled").css('background-position-x', -3 * width);
+	$("#" + id + ":enabled").css('background-position-x', 0);
+	// console.log("#" + id + ":" + $("#" + id + ":disabled").css('background-position-x'));
+}
+
+function disableButton(id, is) {
+    if(is == true){
+        var btn_width = $("#" + id).css('width').slice(0, -2);
+		newXPos = -3 * parseInt(btn_width);
+		$("#" + id).css('background-position-x', newXPos);
+		$("#" + id).attr('disabled', 'disabled');
+    }
+    else{
+		$("#" + id).removeAttr("disabled");
+		$("#" + id).css('background-position-x', 0);
+	}
+}
+
+function hideButton(id, is) {
+    if(is == true){
+        $("#" + id).hide();
+    }
+    else $("#" + id).show();
 }
 
 function set_word(word){
@@ -94,6 +132,7 @@ function get_word(){
 		word = word.replace(/^\s*|\s*$/g,"");
 		// word = word.trim();
 		// log("info", "get_word: " + word, false)
+		set_word(word);
 	}
     catch(error){
 		log("error", error, true);
@@ -143,7 +182,7 @@ $(":button").click(function(){
 	// alert(id + " button is clicked!")
     if(id == "btn_lookup"){
 		hide_words_list();
-        query_word();
+        query_word();	
 	}
     else if(id == "btn_del") {
         clear_input();
@@ -172,7 +211,6 @@ $(".top_panel").mouseleave(function(event){
 });
 
 function bindSwitchTab(){
-
 	$(".nav-tabs li a").click(function () {
 		try{
 			// var id = $(this).attr("id");
@@ -267,6 +305,12 @@ function addTab(id, name, html){
 
 function activeTab(tabId){
 	$("#tabContainer").data("tabs").showTab(tabId);
+}
+
+function TopMostOrNot(){
+	if(window.external){
+		window.external.TopMostOrNot();
+	}
 }
 
 function log(lvl, info, isException){

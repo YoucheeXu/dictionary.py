@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns = "http://www.w3.org/1999/xhtml">
     <head>
-        <title>GUI_v7.0</title>
+        <title>GUI_v7.0.1</title>
         <meta http-equiv = "Content-Type" content = "text/html; charset = utf-8"/>
     </head>
     <body scroll = "no" topmargin = "0" leftmargin = "0">
@@ -13,8 +13,8 @@
             <button type = "button" id = "btn_close" style = "border:none;"></button>
         </div>
         <div class = "input_panel">
-            <button type = "button" id = "btn_prev" style = "border:none;"></button>
-            <button type = "button" id = "btn_next" style = "border:none;"></button>
+            <button type = "button" id = "btn_prev" disabled="disabled"></button>
+            <button type = "button" id = "btn_next" disabled="disabled"></button>
             <div class = "input_box" style = "width:490px; height:37px; background:url(./skin/combox_bk.bmp)">
                 <input type = "text" id = "word_input" style = "width:453px; height:27px; border:0px; background-color:transparent;"/>
                 <button type = "button" id = "btn_del" style = "border:none;"></button>
@@ -43,9 +43,12 @@
 			</div><!-- /.contents_box -->
         </div>
 		<div class = "bottom_panel">
+			<input type="checkbox" name="TopMost" value="TopMost" id = "chk_TOPMOST" checked="checked" onclick="TopMostOrNot()"/>
+			<p id = "txt_TOPMOST">Always TOP</p>			
         </div>
     </body>
-	<script type = "text/javascript" src = "./third_party/jquery-1.11.1.min.js"></script>
+	<!-- <script type = "text/javascript" src = "./third_party/jquery-1.11.1.min.js"></script> -->
+	<script type = "text/javascript" src = "./third_party/jquery-3.4.1.min.js"></script>
 	<!-- <script type = "text/javascript" src = "./third_party/jquery-1.11.3.min.js"></script> -->
 	<script type = "text/javascript" src = "./third_party/bootstrap/bootstrap-2.3.2.js"></script>
 	<link type = "text/css" href = "./third_party/bootstrap/bootstrap-2.3.2.min.css" rel = "stylesheet">
@@ -54,9 +57,9 @@
     <script type = "text/javascript" src = "./third_party/bootstrap-tab/bootstrap-tab.js"></script>
 	<link type = "text/css" href = "./third_party/bootstrap-tab/bootstrap-tab.css" rel = "stylesheet">
 	<link rel="stylesheet" href="./third_party/font-awesome/css/font-awesome.min.css">
-	<link rel = "stylesheet" href = "./js/main.css" type = "text/css" media = "all"/>	
-    <script type = "text/javascript" src = "./js/gui.js"></script>	
+	<link rel = "stylesheet" href = "./js/main.css" type = "text/css" media = "all"/>
 	<link rel = "stylesheet" href = "./js/gui.css" type = "text/css"/>
+	<script type = "text/javascript" src = "./js/gui.js"></script>
 	<script type = "text/javascript" src = "./js/process.js"></script>		
     <script type = "text/javascript" src = "./js/ajax.js"></script>
     <script type = "text/javascript" src = "./js/toggle.js"></script>

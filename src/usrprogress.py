@@ -85,3 +85,6 @@ class UsrProgress():
 	def DelWord(self, word):
 		raise NotImplementedError("don't support to delete " + word)
 		return False
+
+	def Close(self):
+		pass

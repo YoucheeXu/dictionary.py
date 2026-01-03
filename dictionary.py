@@ -23,6 +23,8 @@ from SDictBase import SDictBase
 from MDictBase import MDictBase
 from globalVars import *
 from utils import *
+from DatumContainer import Queue, Stack
+
 
 # Fix for PyCharm hints warnings
 WindowUtils = cef.WindowUtils()
@@ -37,6 +39,7 @@ class MainFrame(tk.Frame):
 
 		self.__enableMove = False
 		self.__winOK = False
+		self.__bNormWindow = False
 
 	def Create(self, width, height):
 
@@ -54,7 +57,7 @@ class MainFrame(tk.Frame):
 		self.bind("<Configure>", self.__on_configure)
 		self.master.bind("<Configure>", self.__on_root_configure)
 		self.__root.bind("<Unmap>", self.__on_unmap)
-		self.__root.bind("<Map>", self.__on_map)		
+		self.__root.bind("<Map>", self.__on_map)
 
 		# BrowserFrame
 		self.__browser_frame = BrowserFrame(self)
@@ -67,13 +70,14 @@ class MainFrame(tk.Frame):
 		self.pack(fill = tk.BOTH, expand = tk.YES)
 
 		screenwidth = self.__root.winfo_screenwidth()
-		screenheight = self.__root.winfo_screenheight()  
+		screenheight = self.__root.winfo_screenheight()
 		size = '%dx%d+%d+%d' % (width, height, (screenwidth - width)/2, (screenheight - height)/2)
 
 		gLogger.info("size: %s" %size)
 
 		self.__root.geometry(size)
 		self.__root.resizable(height = None, width = None)
+		# self.__root.update_idletasks()
 
 		self.__no_title()
 
@@ -86,14 +90,12 @@ class MainFrame(tk.Frame):
 		self.__browser_frame.navigate(url)
 
 	def __no_title(self):
+
 		if IsWindows():
-
 			self.__root.overrideredirect(True)	#no title
-
 			self.__root.after(10, lambda: self.__set_appwindow())
-
 		elif IsLinux():
-			self.__root.wm_attributes('-type', 'splash')	
+			self.__root.wm_attributes('-type', 'splash')
 
 	def __set_appwindow(self):
 		if IsWindows():
@@ -143,14 +145,16 @@ class MainFrame(tk.Frame):
 		gLogger.info("MainFrame.on_close")
 		if self.__browser_frame:
 			self.__browser_frame.on_root_close()
-		self.master.destroy()		
+		self.master.destroy()
 
 	def __on_unmap(self, event):
 		# gLogger.info("on_unmap!")
 		pass
 
 	def __on_map(self, event):
-		# gLogger.info("on_map!")
+		if self.__root.wm_state() == "normal" and not self.__bNormWindow:
+			self.__bNormWindow = True
+			self.__no_title()
 		pass
 
 	def start_move(self, x, y):
@@ -170,8 +174,8 @@ class MainFrame(tk.Frame):
 	def moving(self, x, y):
 		if(not self.__enableMove): return
 
-		newX = self.__root_x + x - self.__x 
-		# newX = self.winfo_x() + x - self.x 
+		newX = self.__root_x + x - self.__x
+		# newX = self.winfo_x() + x - self.x
 		newY = self.__root_y + y - self.__y
 		# newY = self.winfo_y() + y - self.y
 
@@ -191,6 +195,9 @@ class MainFrame(tk.Frame):
 		self.__x = None
 		self.__y = None
 
+	def TopMostOrNot(self, bTop):
+		self.__root.wm_attributes('-topmost', bTop)
+
 	def get_browser(self):
 		if self.__browser_frame:
 			return self.__browser_frame.get_browser()
@@ -202,14 +209,15 @@ class MainFrame(tk.Frame):
 		return None
 
 	def min(self):
-		# return
 		# self.master.wm_withdraw()
 		# self.__root.state('withdrawn')
 		# self.master.update_idletasks()
-		self.master.overrideredirect(False)
-		self.master.state('iconic')
+		# self.master.overrideredirect(False)
+		# self.master.state('iconic')
 		# self.master.wm_iconify()
-		pass
+		self.__root.overrideredirect(False)
+		self.__root.iconify()
+		self.__bNormWindow = False
 
 	def restore(self):
 		self.master.wm_deiconify()
@@ -412,7 +420,7 @@ class RequestHandler(object):
 		gLogger.info("url: " + url)
 		# gLogger.info(allow_execution_out)
 		protocol = url[:url.find(":")]
-		
+
 		gLogger.info("protocol: " + protocol)
 		if protocol == "entry":
 			word = url[url.find("//") + 2:]
@@ -430,6 +438,12 @@ class dictApp():
 		self.__curDictBase = None
 		self.__word = None
 		self.__homeRdy = False
+		self.__bTop = True
+
+		self.__lastWord = None
+		self.__PrevStack = Stack()
+		# self.__NextQueue = Queue()
+		self.__NextStack = Stack()
 
 	def __del__(self):
 		print("dict App del!")
@@ -476,7 +490,7 @@ class dictApp():
 			self.__opener = urllib.request.build_opener(proxyHandler)
 
 		proxies = urllib.request.getproxies()
-		gLogger.info(proxies)	
+		gLogger.info(proxies)
 
 	def add_audio(self, name, audioPackage):
 		self.__auidoArchive = audioPackage
@@ -578,9 +592,10 @@ class dictApp():
 		if id == "btn_close":
 			# self.__window.master.withdraw()
 			self.__window.master.destroy()
-
 		elif id == "btn_min": self.__window.min()
-		else: 
+		elif id == "btn_prev": self.__QueryPrev()
+		elif id == "btn_next": self.__QueryNext()
+		else:
 			gLogger.info(id)
 
 	def start_move(self, x, y):
@@ -598,7 +613,19 @@ class dictApp():
 		elif(lvl == "error"):
 			gLogger.error(info)
 
-	def query_word(self, word):
+	def query_word(self, word, nDirect = 0):
+		if self.__lastWord:
+			if nDirect == -1:
+				self.__NextStack.Push(self.__lastWord)
+				# gLogger.info("__PrevQueue: %d", self.__PrevQueue.GetSize())
+				if self.__NextStack.GetSize() >= 1:
+					self.get_browser().ExecuteFunction("disableButton", "btn_next", False);							
+			else:
+				self.__PrevStack.Push(self.__lastWord)
+				# gLogger.info("__PrevQueue: %d", self.__PrevQueue.GetSize())
+				if self.__PrevStack.GetSize() >= 1:
+					self.get_browser().ExecuteFunction("disableButton", "btn_prev", False);			
+
 		self.__word = word
 
 		if self.__homeRdy == False:
@@ -644,7 +671,6 @@ class dictApp():
 
 		tabId = "dict" + str(self.__nTab + 1)
 		# gLogger.info("tabId: " + tabId)
-
 		# gLogger.info("dictParseFun: " + self.__DictParseFun)
 
 		if bDictOK:
@@ -653,6 +679,35 @@ class dictApp():
 			# gLogger.info("audio: " + audio)
 		else:
 			self.get_browser().ExecuteFunction("dictJson", word, tabId, dict, audio)
+
+		self.__lastWord = word
+
+	def __QueryPrev(self):
+		word = self.__PrevStack.Pop()
+		if self.__PrevStack.GetSize() == 0:
+			self.get_browser().ExecuteFunction("disableButton", "btn_prev", True);
+
+		# self.__NextQueue.Enqueue(word)
+		# if self.__NextQueue.GetSize() == 2:
+				# self.get_browser().ExecuteFunction("disableButton", "btn_next", False);
+
+		self.get_browser().ExecuteFunction("set_word", word);
+		# self.get_browser().ExecuteFunction("query_word");
+		self.query_word(word, -1)
+
+	def __QueryNext(self):
+		# word = self.__NextQueue.Dequeue()
+		word = self.__NextStack.Pop()
+		if self.__NextStack.GetSize() == 0:
+			self.get_browser().ExecuteFunction("disableButton", "btn_next", True);
+
+		# self.__PrevStack.Push(word)
+		# if self.__PrevStack.GetSize() == 2:
+				# self.get_browser().ExecuteFunction("disableButton", "btn_prev", False);
+
+		self.get_browser().ExecuteFunction("set_word", word);
+		# self.get_browser().ExecuteFunction("query_word");
+		self.query_word(word, 1)
 
 	def set_miss_record_file(self, miss_dict, miss_audio):
 		self.__miss_dict = miss_dict
@@ -688,18 +743,19 @@ class dictApp():
 	'''
 
 	def speechWord(self, audio):
-
 		if os.path.isfile(audio) == False:
 			gLogger.error("The is no mp3: " + audio)
 			msgBox.showerror(word, "The is no mp3: " + audio)
-			return "break"
-
 		try:
 			self.playMP3(audio)
 		except Exception as ex:
 			gLogger.error("wrong mp3: " + audio)
 			msgBox.showerror(word, "wrong mp3: " + audio)
 			gLogger.info(Exception + ": " + ex)
+
+	def TopMostOrNot(self):
+		self.__bTop = not self.__bTop
+		self.__window.TopMostOrNot(self.__bTop)
 
 	def OnTextChanged(self, word):
 		# global gLogger
@@ -709,7 +765,7 @@ class dictApp():
 		# ret = globalVar.GetApp().get_curDB().get_wordslst(wdsLst, word)
 		# curDictbase = self.get_curDB()
 		ret = self.__curDictBase.get_wordsLst(wdsLst, word)
-		if (not ret): 
+		if (not ret):
 			# gLogger.info("OnTextChanged: no similiar words!")
 			return False
 
@@ -800,7 +856,7 @@ def main():
 	audioFile = os.path.join(curPath, audio)
 	format = audioGroup["Format"]
 	typ = format["Type"]
-	
+
 	if typ == "ZIP":
 		compression = format["Compression"]
 		compressLevel = format["Compress Level"]

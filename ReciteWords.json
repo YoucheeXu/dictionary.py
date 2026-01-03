@@ -1,6 +1,6 @@
 {
 	"Common": {
-		"ver": "1.0.0.7"
+		"ver": "1.0.0.8"
 	},
 
 	"GUI": {
@@ -67,13 +67,18 @@
 		},
 		"AudioBase": {
 			"Name": "Google",
-			"Dict": "audio/Google-us.zip"
+			"Audio": "audio/Google-us.zip",
+			"Format": {
+				"Type": "ZIP",
+				"Compression": "ZIP_DEFLATED",
+				"Compress Level": 2
+			}
 		}
 	},
 
 	"User": {
-		"nUser": 1,
-		"Info": [
+		"LastUser": 1,
+		"Users": [
 			{
 				"Name": "XYQ",
 				"Target": "CET6",

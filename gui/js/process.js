@@ -49,13 +49,13 @@ function process_primary(tabAlign, dict_primary){
 						// xml += "X: "
 						bMeaning = true;
 					}
-					console.log(bMeaning);
+					// console.log(bMeaning);
 					if(primary.type == "example" && bMeaning == true){
 						// console.log("xml: " + xml + ";");
 						// xml += "Y: ";
 						xml += "\r\n";
 						bMeaning = false;
-						console.log(bMeaning);
+						// console.log(bMeaning);
 					}
 					xml += tabAlign + "<div class = '" + primary.type + "'>";
 					tabAlign += "\t";

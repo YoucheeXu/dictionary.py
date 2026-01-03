@@ -42,7 +42,7 @@ def main():
 
 	lFile = os.path.join(curPath, logFile)
 
-	gLogger = CreateLogger("ReciteWords", logFile)
+	gLogger = create_logger("ReciteWords", logFile)
 	SetLogger(gLogger)
 
 	gLogger.info(str(datetime.date.today()))
@@ -60,6 +60,7 @@ def main():
 		root.mainloop()
 	except Exception as ex:
 		gLogger.error(Exception, ": ", ex)
+
 
 class MainFrame(tk.Toplevel):
 	""""""
@@ -152,25 +153,21 @@ class MainFrame(tk.Toplevel):
 		return "break"
 
 	def __initDict(self):
-		# global gLogger
-
-		curPath = os.getcwd()
-		gLogger.info("curPath: %s" %curPath)
-		dict = "dict\\15000.dict"
-		dictFile = os.path.join(curPath, dict)
-		gLogger.info("dict: %s" %dictFile)
-		audio = "audio\\Google-us.zip"
-		audioFile = os.path.join(curPath, audio)
-		gLogger.info("audio: %s" %audioFile)
-		progress = "dict\\XYQ.progress"
-		progressFile = os.path.join(curPath, progress)
-		gLogger.info("progress: %s" %progressFile)
-
 		try:
+			curPath = os.getcwd()
+			gLogger.info("curPath: %s" %curPath)
+			dict = gCfg["DictBase"]["DictBase"]["Dict"]
+			dictFile = os.path.join(curPath, dict)
+			gLogger.info("dict: %s" %dictFile)
 			self.__dictBase = SDictBase(dictFile)
-			self.__audioBase = AuidoArchive(audioFile)
-			self.__usrProgress = UsrProgress()
-			self.__usrProgress.Open(progressFile)
+
+			audioCfg = gCfg["DictBase"]["AudioBase"]
+			audio = audioCfg["Audio"]
+			audioFile = os.path.join(curPath, audio)
+			gLogger.info("audio: %s" %audioFile)
+			compression = audioCfg["Format"]["Compression"]
+			compressLevel = audioCfg["Format"]["Compress Level"]
+			self.__audioBase = AuidoArchive(audioFile, compression, compressLevel)
 
 		except Exception as error:
 			gLogger.error(error)
@@ -586,7 +583,6 @@ class MainFrame(tk.Toplevel):
 					i = 0
 
 	def Go(self):
-		# global gCfg, gLogger
 
 		self.__today = datetime.date.strftime(datetime.date.today(), "%Y-%m-%d")
 
@@ -597,8 +593,20 @@ class MainFrame(tk.Toplevel):
 		newWdsLimit = gCfg["StudyMode"]["Limit"]
 		self.__TestCount = gCfg["TestMode"]["Times"]
 
-		nUser = gCfg["User"]["nUser"]
-		level = gCfg["User"]["Info"][nUser - 1]["Target"]
+		# read user
+
+		selectUser = gCfg["User"]["LastUser"]
+		usrCfg = gCfg["User"]["Users"][selectUser - 1]
+		name = usrCfg["Name"]
+		gLogger.info("selectUser: %s" %name)
+		curPath = os.getcwd()
+		progress = usrCfg["Progress"]
+		progressFile = os.path.join(curPath, progress)
+		gLogger.info("progress: %s" %progressFile)
+		self.__usrProgress = UsrProgress()
+		self.__usrProgress.Open(progressFile)
+
+		level = usrCfg["Target"]
 
 		# update count
 
@@ -810,9 +818,9 @@ class MainFrame(tk.Toplevel):
 		else: return
 
 	def __Exit_App(self, event = None):
-		# self.__dictBase.Close() 
-		# self.__audioBase.Close()
-		# self.__usrProgress.Close()
+		self.__dictBase.close()
+		self.__audioBase.close()
+		self.__usrProgress.Close()
 		os._exit(0)
 
 

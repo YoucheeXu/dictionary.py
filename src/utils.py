@@ -6,7 +6,7 @@ import logging
 # from globalVar import SetLogger
 
 
-def CreateLogger(loggerName, logFile = None, level = logging.INFO):
+def create_logger(loggerName, logFile = None, level = logging.INFO):
 
 	gLogger = logging.getLogger(loggerName)
 	gLogger.setLevel(logging.DEBUG)

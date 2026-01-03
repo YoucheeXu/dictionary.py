@@ -7,6 +7,14 @@
 * add wrong hint in voice
 * "new" label when word first pop
 
+Known Bugs:
+* out of index happen when last one was chopped
+
+
+v1.0.0.8
+* update cfg file									OK
+* cooperate with modify of SDictBase				OK
+
 
 v1.0.0.7
 * use json as configuration file					OK
@@ -14,13 +22,6 @@ v1.0.0.7
 
 
 v1.0.0.6
-Known Bugs:
-* out of index happen when last one was chopped
-
-Bugs Fixed:
-* do "next" in the "study mode" of the last word, it'll be wrong		OK
-
-Fun Added:
 * log function			OK
 * quit warring			OK
 * save progress before quiting in mid(Bug: wrong add 1 to words which was recited)	OK
@@ -29,3 +30,6 @@ Fun Added:
 * display log in console												OK
 * word is added to learn list only once in test mode, and hint it		OK
 * give up remember word to display word in "Next"						OK
+
+Bugs Fixed:
+* do "next" in the "study mode" of the last word, it'll be wrong		OK

@@ -16,14 +16,9 @@
 * check net connection dose work or not
 * support proxy with authentication
 * add + to add tab and associate with new dictionary
-* function of other buttons
-	* four state button
-	* previous button
-	* next button
 * up and down key to choose list word
-* after fixing word (trim bank) update word in input box
-* miniable
 * support dict writable or not
+* support html proxy setting
 
 Known Bugs:
 * when disable title, can't input word in Ubuntu 18.04, see https://exceptionshub.com/tkinters-overideredirect-prevents-certain-events-in-mac-and-linux.html
@@ -32,6 +27,16 @@ Known Bugs:
 * SDictBase doesn't display well
 * close button can't trigger __del__
 * when trigger "entry://can", it won't pronounce automatically
+
+
+v1.0.1.2
+* always top or not												OK
+* miniable and restore											OK
+* support four state button										OK
+* after fixing word (trim bank) update word in input box		OK
+* make previous button work										OK
+* make next button work											OK
+* update jquery to jquery-3.4.1									OK
 
 
 v1.0.1.1

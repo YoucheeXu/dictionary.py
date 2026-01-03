@@ -29,6 +29,7 @@
     left: 624px;
     top: 1px;    
 }
+
 #btn_close{
     position: absolute;
     left: 657px;
@@ -45,31 +46,37 @@
 }
 
 #btn_prev{
-    outline:none;    
+    outline:none;
+	border:none;
     position: relative;
     left: 10px;
     top: 10px;
 	/* width:45px; */
 	/* height:37px; */
-	/* background:url(..\skin\prev_btn.bmp) no-repeat; */
-    /* background-position:0px 0px; */
-}
-/* #btn_prev:hover{ */
-    /* background-position:-45px 0px; */
-/* } */
-/* #btn_prev:active{ */
-    /* background-position:-90px 0px; */
-}
-#btn_prev:disabled{
-    background-position:-135px 0px;
+	/* background:url(../skin/prev_btn.bmp) no-repeat; */
+	/* background-position:0px 0px; */
 }
 
+/* #btn_prev:disabled{ */
+	/* background-position-x: -135px; */
+/* } */
+
 #btn_next{
-    outline:none;    
+    outline:none;
+	border:none;	
     position: absolute;
     left: 55px;
     top: 10px;
+	/* width:40px; */
+	/* height:37px;	 */
+	/* background:url(../skin/next_btn.bmp) no-repeat; */
+	/* background-position:0px 0px;	 */
 }
+
+/* #btn_next:disabled{ */
+	/* background-position-x: -120px; */
+/* } */
+
 .input_box{
     position: absolute;
     top: 10px;
@@ -78,12 +85,12 @@
 	height: 32px;     
 }
 
-input:focus {
-    border: 0px;
-    outline: none;
-    background-color:transparent;
-    border-style:none;
-}
+/* input:focus { */
+    /* border: 0px; */
+    /* outline: none; */
+    /* background-color:transparent; */
+    /* border-style:none; */
+/* } */
 
 #btn_del{
     position: absolute;
@@ -118,4 +125,16 @@ input:focus {
     height:35px;
     width:701px;
     background-color:#43A0FF;    
+}
+
+#chk_TOPMOST{
+    position: absolute;
+    right: 140px;
+    bottom: 10px;
+}
+
+#txt_TOPMOST{
+    position: fixed;
+    right: 50px;
+    bottom: 0px;	
 }
