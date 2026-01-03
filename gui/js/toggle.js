@@ -1,6 +1,3 @@
-$(document).ready(function() {
-});
-
 var curr_show_example = true;
 
 var get_all_example_uls = function(){
@@ -39,29 +36,31 @@ var toggle_example = function(){
 	else{show_example();}
 }
 
-$("#toggle_example").click(function() {
-	$('.example').toggleClass('hide_Style');
-	//alert("(\"#toggle_example\").click");
-	//var togtext = $(this).text();
-	//alert(togtext);
-	if(curr_show_example){
-		curr_show_example = false;
-		//alert($(this).attr)
-		//$(this).innerHTML = "+ Show Examples";
-		$(this).text("+ Show Examples");
-		
-	}
-	else{
-		curr_show_example = true;
-		//$(this).innerHTML = "- Hide Examples";
-		$(this).text("- Hide Examples");
-	}
-});
+function bindToggleExample(){
+	$("#toggle_example").click(function() {
+		$('.example').toggleClass('hide_Style');
+		//alert("(\"#toggle_example\").click");
+		//var togtext = $(this).text();
+		//alert(togtext);
+		if(curr_show_example){
+			curr_show_example = false;
+			//alert($(this).attr)
+			//$(this).innerHTML = "+ Show Examples";
+			$(this).text("+ Show Examples");
+			
+		}
+		else{
+			curr_show_example = true;
+			//$(this).innerHTML = "- Hide Examples";
+			$(this).text("- Hide Examples");
+		}
+	});
 
-$("#toggle_example").mouseover(function() {
-	$('.none_class_just_example').toggleClass('bold');
-});
+	$("#toggle_example").mouseover(function() {
+		$('.none_class_just_example').toggleClass('bold');
+	});
 
-$('#toggle_example').bind('mouseenter mouseleave', function(){
-	$(this).toggleClass('bold');
-});
+	$('#toggle_example').bind('mouseenter mouseleave', function(){
+		$(this).toggleClass('bold');
+	});
+}

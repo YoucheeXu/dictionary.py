@@ -38,6 +38,7 @@ function dictJson(word, tabId, dict, audio){
 		var display = "\r\n" + process_primary(tabAlign + "\t", obj.primaries) + tabAlign;
 		// log("info", display, false);
 		// $('#panel1 p').html(display);
+		// log("info", display, false);
 		$('#' + tabId + ' p').html(display);
 		$(".Word").html(load_word(word, audio));
 		load_starts(1);

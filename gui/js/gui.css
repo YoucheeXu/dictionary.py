@@ -4,13 +4,13 @@
     background-color:#43A0FF;
     position: absolute;
     left: 0px;
-    width: 0px;
+    top: 0px;
     width :701px;
     height :35px;
 }
 
 #btn_menu{
-    position: relative;
+    position: absolute;
     left: 560px;
     top: 1px;
 }
@@ -63,7 +63,7 @@
 
 #btn_next{
     outline:none;
-	border:none;	
+	border:none;
     position: absolute;
     left: 55px;
     top: 10px;
@@ -79,8 +79,8 @@
 
 .input_box{
     position: absolute;
+    left: 95px;	
     top: 10px;
-    left: 95px;
 	width: 486px;
 	height: 32px;     
 }
@@ -94,18 +94,19 @@
 
 #btn_del{
     position: absolute;
+    left: 436px;	
     top: 1px;
-    left: 436px;
 }
 #btn_drop{
     position: absolute;
+    left: 466px;	
     top: 1px;
-    left: 466px;
 }
+
 #btn_lookup{
     position: absolute;
+    left: 581px;	
     top: 10px;
-    left: 581px;
 }
 
 .main_panel{
@@ -129,12 +130,12 @@
 
 #chk_TOPMOST{
     position: absolute;
-    right: 140px;
+    left: 585px;
     bottom: 10px;
 }
 
 #txt_TOPMOST{
-    position: fixed;
-    right: 50px;
-    bottom: 0px;	
+    position: absolute;
+    left: 605px;
+    bottom: -10px;	
 }

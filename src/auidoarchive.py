@@ -20,10 +20,10 @@ class AuidoArchive():
 		self.__bWritable = True
 
 		# self.__tempAudioDir = os.path.join(tempfile.gettempdir(), 'audio')
-		filepath, tempfilename = os.path.split(audioSrc)
-		filename, extension = os.path.splitext(tempfilename)
-		self.__tempAudioDir = os.path.join(filepath, filename)
-		if not os.path.exists(self.__tempAudioDir):
+		filepath, self.__audioArchive = os.path.split(audioSrc)
+		fileName, extension = os.path.splitext(self.__audioArchive)
+		self.__tempAudioDir = os.path.join(filepath, fileName)
+		if os.path.exists(self.__tempAudioDir) == False:
 			os.makedirs(self.__tempAudioDir)
 		gLogger.info("tempAudioDir: " + self.__tempAudioDir)
 
@@ -54,7 +54,7 @@ class AuidoArchive():
 							f.write(audio)
 						return True, audioFile
 					else:
-						return False, "Fail to read audio of " + word + " in file!"
+						return False, "{0} {1}{2}".format("Fail to read audio in", self.__audioArchive, "!")
 			elif self.__bWritable:
 				audioURL = "https://ssl.gstatic.com/dictionary/static/sounds/oxford/" + word + "--_us_1.mp3"
 
@@ -68,7 +68,7 @@ class AuidoArchive():
 						self.__audioZip.addFile(fileName, audio)
 					return True, audioFile
 			else:
-				return False, "no audio: " + word + " in file!"
+				return False, "{0} {1}{2}".format("no audio in", self.__audioArchive, "!")
 
 		except Exception as err:
 			return False, str(err)

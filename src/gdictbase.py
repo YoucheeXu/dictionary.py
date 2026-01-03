@@ -29,7 +29,7 @@ class GDictBase(DictBase):
 		self.__bWritable = True
 		self.__dictZip = ZipArchive(dictSrc, compression, compresslevel)
 		self.__tempDir = tempfile.gettempdir()
-		gLogger.info("tempDir: " + self.__tempDir)
+		gLogger.info("tempDictDir: " + self.__tempDir)
 
 	def close(self):
 		pass

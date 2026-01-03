@@ -187,61 +187,31 @@ $(":button").click(function(){
     else if(id == "btn_del") {
         clear_input();
     }
+	else if(id == "btn_menu"){
+
+	}
     else if (window.external) window.external.OnButtonClicked(id);
 });
 
-$(".top_panel").mousedown(function(event){
+$(".main_panel").mousedown(function(event){
 	// alert(".top_panel" + event.clientX);
 	if(window.external) window.external.start_move(event.screenX, event.screenY);
 });
 
-$(".top_panel").mousemove(function(event){
+$(".main_panel").mousemove(function(event){
 	// alert(".top_panel" + event.clientX);
 	if(window.external) window.external.moving(event.screenX, event.screenY);
 });
 
-$(".top_panel").mouseup(function(event){
+$(".main_panel").mouseup(function(event){
 	// alert(".top_panel" + event.clientX);
 	if(window.external) window.external.stop_move(event.screenX, event.screenY);
 });
 
-$(".top_panel").mouseleave(function(event){
+$(".main_panel").mouseleave(function(event){
 	// alert(".top_panel" + event.clientX);
 	if(window.external) window.external.stop_move(event.screenX, event.screenY);
 });
-
-function bindSwitchTab(){
-	$(".nav-tabs li a").click(function () {
-		try{
-			// var id = $(this).attr("id");
-			// log("info", "id: " + id, false);
-			// eval(id + "_search()");
-			// log("info", "SwitchTab", false);
-
-			var tabRef = $(this).attr("href");
-			log("info", "Switch to tabId: " + tabRef, false);
-			$(tabRef + ' p').html('');
-
-			tabNum = tabRef.slice(5);
-			log("info", "tabNum: " + tabNum, false);
-			var n = parseInt(tabNum);
-			if(window.external){
-				window.external.switch_tab(n);
-			}
-			query_word();
-		}
-		catch(error){
-			log("error", error, true);
-		}
-
-		$('#words_list').hide();
-		$("#contents_list_box").css("width", 701);    
-	})
-}
-
-function get_active_tab_href(){
-	return $(".nav-tabs").find('li.active').children('a').attr('href');
-}
 
 $(function(){
 $('#word_input').bind('keyup', function(event){
@@ -298,15 +268,6 @@ function append_words_list(word) {
 	// alert("<option value = '" + no + "'>" + word + "</option>");
 }
 
-function addTab(id, name, html){
-	$("#tabContainer").data("tabs").addTab({id: id, text: name, closeable: true, html: html});
-	console.log("addTab: ", id, name, html);
-}
-
-function activeTab(tabId){
-	$("#tabContainer").data("tabs").showTab(tabId);
-}
-
 function TopMostOrNot(){
 	if(window.external){
 		window.external.TopMostOrNot();
@@ -319,9 +280,9 @@ function log(lvl, info, isException){
 
 		if(window.external){
 			if(isException == true){
-				info = "Name: " + info.nameinfo + "\r\n\t" +
-					"message: " + info.message + "\r\n\t" +
-					"description: " + info.description + "\r\n\t" +
+				info = "Name: " + info.nameinfo + "\n\t" +
+					"message: " + info.message + "\n\t" +
+					"description: " + info.description + "\n\t" +
 					"stack: " + info.stack;
 			}
 			window.external.log(lvl, info);
@@ -330,4 +291,92 @@ function log(lvl, info, isException){
 	catch(error){
 		console.log(error);
     }
+}
+
+function bindSwitchTab(){
+	$(".nav-tabs li a").click(function () {
+		try{
+			// var id = $(this).attr("id");
+			// log("info", "id: " + id, false);
+			// eval(id + "_search()");
+			// log("info", "SwitchTab", false);
+
+			var tabId = $(this).attr("href");
+			log("info", "Switch to : " + tabId, false);
+			$(tabId + ' p').html('');
+
+			tabId = tabId.slice(1);
+			log("info", "tabId: " + tabId, false);
+			// var n = parseInt(tabNum);
+			if(window.external){
+				window.external.switch_tab(tabId);
+			}
+			query_word();
+		}
+		catch(error){
+			log("error", error, true);
+		}
+
+		$('#words_list').hide();
+		$("#contents_list_box").css("width", 701);    
+	})
+}
+
+function get_active_tab_href(){
+	return $(".nav-tabs").find('li.active').children('a').attr('href');
+}
+
+function addTab(tabId, name, html){
+	$("#tabContainer").data("tabs").addTab({tabId: tabId, name: name, closeable: true, html: html});
+	console.log("addTab: ", tabId, name, html);
+}
+
+function active_Tab(tabId){
+	$("#tabContainer").data("tabs").showTab(tabId);
+}
+
+function bindMenus(){
+	$(".dropdown-menu a").click(function () {
+		var menuId = $(this).attr("href");
+
+		menuId = menuId.slice(1);
+		log("info", "menuId: " + menuId, false);
+
+		if(window.external){
+			window.external.OnMenuClicked(menuId);
+		}		
+	})
+}
+
+function fill_menu(menuId, name){
+	// <a class="dropdown-item" href="#XX-Net">XX-Net</a>
+	item = '<a class="dropdown-item" href="#{0}">{1}</a>'.format(menuId, name)
+	$("#sys_menu").append(item)
+}
+
+function active_menu(menuId){
+	// var $a = $("#sys_menu a")
+	// console.log($a);
+	// href = $a.attr("href");
+
+	// var ch = $("#ff").find("input");
+	// console.log(ch.length);
+	// for (var i=0; i <ch.length; i++) {
+		// console.log(ch.eq(i));
+	// }
+
+	var as = $("#sys_menu a")
+	// console.log(as.length);
+	for (var i = 0; i <as.length; i++) {
+		var a = as.eq(i);
+		// console.log(a);
+		href = a.attr("href");
+		// console.log(href)
+		if(href != "#" + menuId){
+			a.removeClass("active");
+		}
+		else{
+			a.addClass("active");
+		}
+	}
 }

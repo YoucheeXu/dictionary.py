@@ -6,27 +6,40 @@
 * word dict
 	* origin word (margins -> margin)
 	* read/mark function
-* multiThread
-	* interrupt searching word any time
 * black list
-* menu
-* display or hide cmd window on command
-* delete file to recycle bin
-* singular
 * check net connection dose work or not
 * support proxy with authentication
 * add + to add tab and associate with new dictionary
-* up and down key to choose list word
 * support dict writable or not
 * support html proxy setting
+* certificates in downloading audio with proxy
+* display or hide cmd window on demand
+* singular
+* up and down key to choose list word
+* another thread to download file
 
 Known Bugs:
 * when disable title, can't input word in Ubuntu 18.04, see https://exceptionshub.com/tkinters-overideredirect-prevents-certain-events-in-mac-and-linux.html
-* movable don't work well
-* illegal close may cause zip error
 * SDictBase doesn't display well
 * close button can't trigger __del__
 * when trigger "entry://can", it won't pronounce automatically
+
+
+v1.0.1.3
+* log miss dict and audio in same file							OK
+* orgin pos when show is configurable							OK
+* support High DPI												Most OK with bug
+* upated bootstrap to v4.1.3									OK
+* proxy menu													OK
+* save configure to json										OK
+* hint of progress of download 									OK
+
+Bugs Fixed:
+* toggle_example doesn't work									OK
+* movable don't work well										Most OK
+* some err can't display in dict								OK
+* illegal close may cause zip error								Most OK
+* two toggle example											OK
 
 
 v1.0.1.2

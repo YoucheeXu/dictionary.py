@@ -3,6 +3,12 @@
 * 	load doesn't work well
 *   html doesn't display pretty
 *
+* v2.0
+* 	updated to compliant with bootstrap v4.1.3
+*
+*	known issues:
+*		1. close could cause tab.js error
+*
 * v1.1
 * 	enable empty data in init
 *
@@ -48,10 +54,14 @@
     //结构模板
     BaseTab.prototype.template = {
         ul_nav: '<ul id = "myTab" class = "nav nav-tabs"></ul>',
+		ul_nav4: '<ul class="nav nav-tabs" id="myTab" role="tablist"></ul>',
         ul_li: '<li><a href = "#{0}" data-toggle = "tab"><span>{1}</span></a></li>',
+        ul_li4: '<li class="nav-item" role="presentation"><a class="nav-link" id="{0}-tab" data-toggle="tab" href="#{0}" role="tab" aria-controls="{0}" aria-selected="false">{1}</a></li>',
         ul_li_close: '<i class = "fa fa-remove closeable" title = "关闭"></i>',
         div_content: '<div class = "tab-content"></div>',
-        div_content_panel: '<div class = "tab-pane fade" id = "{0}"></div>'
+        div_content4: '<div class = "tab-content"  id="myTabContent"></div>',
+        div_content_panel: '<div class = "tab-pane fade" id = "{0}"></div>',
+		div_content_panel4: '<div class = "tab-pane fade" id = "{0}" role = "tabpanel" aria-labelledby = "{0}-tab"></div>'
     }
 
     //初始化
@@ -75,12 +85,12 @@
 
     //使用模板搭建页面结构
     BaseTab.prototype.builder = function (data) {
-        var ul_nav = $(this.template.ul_nav);
-        var div_content = $(this.template.div_content);
+        var ul_nav = $(this.template.ul_nav4);
+        var div_content = $(this.template.div_content4);
 
         for (var i = 0; i < data.length; i++) {
             //nav-tab
-            var ul_li = $(this.template.ul_li.format(data[i].id, data[i].text));
+            var ul_li = $(this.template.ul_li4.format(data[i].tabId, data[i].name));
             //如果可关闭,插入关闭图标，并绑定关闭事件
             if (data[i].closeable) {
                 var ul_li_close = $(this.template.ul_li_close);
@@ -92,7 +102,7 @@
             ul_nav.append(ul_li);
 
             //div-content panel
-            var div_content_panel = $(this.template.div_content_panel.format(data[i].id));
+            var div_content_panel = $(this.template.div_content_panel4.format(data[i].tabId));
 
             div_content.append(div_content_panel);
         }
@@ -104,7 +114,7 @@
         this.$element.find(".nav-tabs li:eq(" + this.options.showIndex + ") a").tab("show");
     }
 
-    BaseTab.prototype.loadData = function () {
+    BaseTab.prototype.loadData = function() {
         var self = this;
 
         //tab点击即加载事件
@@ -115,38 +125,40 @@
         for (var i = 0; i < data.length; i++) {
             if (this.options.loadAll || this.options.showIndex == i) {
                 if (data[i].url) {
-                    // $("#" + data[i].id).load(data[i].url, data[i].param);
-					$("#" + data[i].id).load(data[i].url);
-                    this.stateObj[data[i].id] = true;
+                    // $("#" + data[i].tabId).load(data[i].url, data[i].param);
+					$("#" + data[i].tabId).load(data[i].url);
+                    this.stateObj[data[i].tabId] = true;
 					console.log("url: ", data[i].url);
 				} else if(data[i].html){
-					$("#" + data[i].id).html(data[i].html);
+					$("#" + data[i].tabId).html(data[i].html);
 				} else{
-                    console.error("id=" + data[i].id + "的tab页未指定url");
-                    this.stateObj[data[i].id] = false;
+                    console.error("id = " + data[i].tabId + "的tab页未指定url");
+                    this.stateObj[data[i].tabId] = false;
                 }
 				
             } else {
-                this.stateObj[data[i].id] = false;
-                (function (id, url, paramter) {
-                    self.$element.find(".nav-tabs a[href='#" + id + "']").on('show.bs.tab', function () {
-                        if (!self.stateObj[id]) {
-                            // $("#" + id).load(url, paramter);
-                            $("#" + id).load(url);
-                            self.stateObj[id] = true;
+                this.stateObj[data[i].tabId] = false;
+                (function (tabId, url, paramter) {
+                    self.$element.find(".nav-tabs a[href='#" + tabId + "']").on('show.bs.tab', function () {
+                        if (!self.stateObj[tabId]) {
+                            // $("#" + tabId).load(url, paramter);
+                            $("#" + tabId).load(url);
+                            self.stateObj[tabId] = true;
 							console.log("url: ", url);
                         }
                     });
-                // }(data[i].id, data[i].url, data[i].paramter))
-                }(data[i].id, data[i].url))
+                // }(data[i].tabId, data[i].url, data[i].paramter))
+                }(data[i].tabId, data[i].url))
             }
         }
 
         //关闭tab事件
         this.$element.find(".nav-tabs li a i.closeable").each(function (index, item) {
+			console.log("Found!");
             $(item).click(function () {
                 var href = $(this).parents("a").attr("href").substring(1);
-                if(self.getCurrentTabId()==href){
+				console.log("close_href2: ", href);
+                if(self.getCurrentTabId() == href){
                     self.$element.find(".nav-tabs li:eq(0) a").tab("show");
                 }
                 $(this).parents("li").remove();
@@ -157,10 +169,10 @@
     }
 
     //新增一个tab页
-    BaseTab.prototype.addTab = function (obj) {
+    BaseTab.prototype.addTab = function(obj) {
         var self = this;
         //nav-tab
-        var ul_li = $(this.template.ul_li.format(obj.id, obj.text));
+        var ul_li = $(this.template.ul_li4.format(obj.tabId, obj.name));
         //如果可关闭,插入关闭图标，并绑定关闭事件
         if (obj.closeable) {
             var ul_li_close = $(this.template.ul_li_close);
@@ -171,51 +183,58 @@
 
         this.$element.find(".nav-tabs:eq(0)").append(ul_li);
         //div-content
-        var div_content_panel = $(this.template.div_content_panel.format(obj.id));
+        var div_content_panel = $(this.template.div_content_panel4.format(obj.tabId));
         this.$element.find(".tab-content:eq(0)").append(div_content_panel);
-        // $("#" + obj.id).load(obj.url, obj.paramter);
+        // $("#" + obj.tabId).load(obj.url, obj.paramter);
 
 		if(obj.url){
-			$("#" + obj.id).load(obj.url);
+			$("#" + obj.tabId).load(obj.url);
+			console.log("addTab.url: ", obj.url);
 		} else if(obj.html){
-			$("#" + obj.id).html(obj.html);
+			$("#" + obj.tabId).html(obj.html);
 		}
 
-        // this.stateObj[obj.id] = true;
-		console.log("addTab.url: ", obj.url);
+        // this.stateObj[obj.tabId] = true;
 
         if(obj.closeable){
-            this.$element.find(".nav-tabs li a[href='#" + obj.id + "'] i.closeable").click(function () {
+            this.$element.find(".nav-tabs li a[href='#" + obj.tabId + "'] i.closeable").click(function () {
                 var href = $(this).parents("a").attr("href").substring(1);
-                if(self.getCurrentTabId()==href){
+				console.log("close_href: ", href);
+				//如果关闭的是当前激活的TAB，激活他的前一个tab
+                if(self.getCurrentTabId() == href){
                     self.$element.find(".nav-tabs li:eq(0) a").tab("show");
                 }
+				// console.log($(this));
                 $(this).parents("li").remove();
                 $("#" + href).remove();
+				// $('#myTab li:last-child a').tab('dispose')
+				// a = $(this).parents("a");
+				// console.log(a.attr);
+				// $(this).parents("a").tab('dispose');
             })
         }
 
-        this.$element.find(".nav-tabs a[href='#" + obj.id + "']").tab("show");
+        // this.$element.find(".nav-tabs a[href='#" + obj.tabId + "']").tab("show");
     }
 
     //根据id获取活动也标签名
-    BaseTab.prototype.find=function (tabId) {
+    BaseTab.prototype.find = function (tabId) {
         return this.$element.find(".nav-tabs li a[href='#" + tabId + "']").text();
     }
-    
+
     // 删除活动页
-    BaseTab.prototype.remove=function (tabId) {
+    BaseTab.prototype.remove = function (tabId) {
     	var self=this;
         $("#" + tabId).remove();
         this.$element.find(".nav-tabs li a[href='#" + tabId + "']").parents("li").remove();
     }
     
     // 重新加载页面
-    BaseTab.prototype.reload=function (obj) {
-    	var self=this;
-    	if(self.find(obj.id)!=null){
-    		$("#" + obj.id).remove();
-    		this.$element.find(".nav-tabs li a[href='#" + obj.id + "']").parents("li").remove();
+    BaseTab.prototype.reload = function (obj) {
+    	var self=this; 
+    	if(self.find(obj.tabId) != null){
+    		$("#" + obj.tabId).remove();
+    		this.$element.find(".nav-tabs li a[href='#" + obj.tabId + "']").parents("li").remove();
     		self.addTab(obj);
     	}else{
     		self.addTab(obj);
@@ -223,14 +242,16 @@
     }
 
     //根据id设置活动tab页
-    BaseTab.prototype.showTab=function (tabId) {
+    BaseTab.prototype.showTab = function (tabId) {
         this.$element.find(".nav-tabs li a[href='#" + tabId + "']").tab("show");
     }
 
     //获取当前活动tab页的ID
-    BaseTab.prototype.getCurrentTabId=function () {
-        var href=this.$element.find(".nav-tabs li.active a").attr("href");
-        href=href.substring(1);
+    BaseTab.prototype.getCurrentTabId = function () {
+        var href = this.$element.find(".nav-tabs li.active a").attr("href");
+        var href4 = this.$element.find(".nav-tabs li a.active").attr("href");
+		console.log("active_href: ", href4);
+        href = href4.substring(1);
         return href;
     }
 

@@ -41,7 +41,7 @@ class MainFrame(tk.Frame):
 		self.__winOK = False
 		self.__bNormWindow = False
 
-	def Create(self, width, height):
+	def Create(self, width, height, showHiRatio, showWiRatio):
 
 		# Root
 		self.__root = tk.Tk()
@@ -51,6 +51,12 @@ class MainFrame(tk.Frame):
 
 		# MainFrame
 		tk.Frame.__init__(self, self.__root)
+		# self.__root.tk.call('tk', 'scaling', 1.25/75)
+
+		# To-Do
+		DPI_scaling = self.__getDPI()
+		width *= DPI_scaling
+		height *= DPI_scaling
 		self.master.title("Dictionary")
 		self.master.protocol("WM_DELETE_WINDOW", self.__on_close)
 		# self.bind("<Destroy>", self.__destory)
@@ -71,7 +77,7 @@ class MainFrame(tk.Frame):
 
 		screenwidth = self.__root.winfo_screenwidth()
 		screenheight = self.__root.winfo_screenheight()
-		size = '%dx%d+%d+%d' % (width, height, (screenwidth - width)/2, (screenheight - height)/2)
+		size = '%dx%d+%d+%d' % (width, height, screenwidth * showWiRatio - width/2, screenheight * showHiRatio - height/2)
 
 		gLogger.info("size: %s" %size)
 
@@ -85,6 +91,17 @@ class MainFrame(tk.Frame):
 		self.__root.wm_attributes('-topmost', True)
 
 		self.__winOK = True
+
+	def __getDPI(self):
+		if IsWindows():
+			from ctypes import windll
+			hDC = windll.user32.GetDC(0)
+			LOGPIXELSX = 88
+			dpi = windll.gdi32.GetDeviceCaps(hDC, LOGPIXELSX)/96
+			gLogger.info("DPI is %f" %dpi)
+			return dpi
+		elif IsLinux():
+			return 1.256
 
 	def navigate(self, url):
 		self.__browser_frame.navigate(url)
@@ -369,6 +386,8 @@ class LoadHandler(object):
 		# browser.ExecuteFunction("log", "info", "LoadHandler.OnLoadEnd", False)
 		gLogger.info("LoadHandler.OnLoadEnd")
 		GetApp().add_tabs()
+		GetApp().fill_menus()
+		browser.ExecuteFunction("bindToggleExample")
 
 	'''
 	browser	Browser
@@ -430,14 +449,18 @@ class RequestHandler(object):
 class dictApp():
 
 	def __init__(self):
-		self.__opener = None
+		self._cfgDictFile = ""
+		self._cfgDict = None
+		# self.__opener = None
 
 		# self.__dictBaseLst = []
 		self.__dictBaseDict = {}
-		self.__nTab = 0
+		self.__dictAgent = {}
+		self.__dictId = ""
 		self.__curDictBase = None
 		self.__word = None
-		self.__homeRdy = False
+		self.__dictParseFun = ""
+		self.__bHomeRdy = False
 		self.__bTop = True
 
 		self.__lastWord = None
@@ -445,57 +468,110 @@ class dictApp():
 		# self.__NextQueue = Queue()
 		self.__NextStack = Stack()
 
+		self.__dictSysMenu = {}
+
+		self.__mutexDownloadFile = threading.Lock()
+
 	def __del__(self):
 		print("dict App del!")
 
-	def start(self, width, height, fileURL):
+	def StartAndRun(self):
+		self._cfgDictFile = os.path.join(os.getcwd(), "Dictionary.json")
+		self.__ReadConfigure()
+
+	def __Start(self, width, height, fileURL, showHiRatio, showWiRatio):
+		sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
+
+		# Tk must be initialized before CEF otherwise fatal error (Issue #306)
+		settings = {
+			"debug": True,
+			"log_severity": cef.LOGSEVERITY_ERROR,
+			"log_file": "log//debug.log"
+		}
+		cef.Initialize(settings = settings)
+
+		# settings1 = {
+			# "debug": True,
+			# "log_file": "debug.log",
+			# "log_severity": cef.LOGSEVERITY_INFO,
+			# "product_version": "MyProduct/10.00",
+			# "user_agent": "MyAgent/20.00 MyProduct/10.00",
+		# }
+		# cef.Initialize(settings = settings1)
+		'''
+		switches = {
+			"enable-media-stream": "",
+			"proxy-server": "socks5://127.0.0.1:8888",
+			"disable-gpu": "",
+		}
+		cef.Initialize(switches=switches)
+		'''
+		# cef.Initialize()
 
 		self.__fileURL = fileURL
-		self.__curDictBase = self.get_curDB()
-		self.__DictParseFun = self.__curDictBase.get_parseFun()
+		# self.__curDictBase = self.get_curDB()
+		# self.__dictParseFun = self.__curDictBase.get_parseFun()
 
 		self.__window = MainFrame()
-		self.__window.Create(width, height)
+		self.__window.Create(width, height, showHiRatio, showWiRatio)
 		# self.__window.navigate(fileURL)
 		self.__window.mainloop()
 
-	def close(self):
-		for dictBase in self.__dictBaseDict.values():
-			gLogger.info("Close %s" %dictBase["name"])
-			dictBase["dictBase"].close()
+	def Close(self):
+		for item in self.__dictBaseDict.values():
+			gLogger.info("Close %s" %item["name"])
+			item["dictBase"].close()
 
 		self.__auidoArchive.close()
 
+		self.__SaveConfigure()
+
 	def navigate_home(self):
-		self.__homeRdy = False
+		self.__bHomeRdy = False
 		self.__window.navigate(self.__fileURL)
 
-	def set_agent(self, bIEAgent, bAgent, ip, name, program):
+	def __AddAgent(self, name, ip, program, bActived = False):
+		self.__dictAgent.update({name: {"ip": ip, "program": program, "bActived": bActived}})
 
-		self.__Name = name
-		self.__Program = program
+	def ActiveAgent(self, activeAgent):
+		bIEAgent = False
+		opener = None
+		gLogger.info("activeAgent = %s" %activeAgent)
+		self._cfgDict["Agents"]["activeAgent"] = activeAgent
+		for name in self.__dictAgent.keys():
+			if name == activeAgent:
+				self.__dictAgent[name]["bActived"] = True
+			else:
+				self.__dictAgent[name]["bActived"] = False
 
-		if bAgent:
-			gLogger.info("agent")
+		if activeAgent != "None":
+			gLogger.info("active agent: %s" %activeAgent)
+			ip = self.__dictAgent[activeAgent]["ip"]
 			proxyHandler = urllib.request.ProxyHandler({
 				'http': ip,
 				'https': ip
 			})
-			self.__opener = urllib.request.build_opener(proxyHandler)
+			opener = urllib.request.build_opener(proxyHandler)
 		elif bIEAgent:
 			gLogger.info("ie_agent")
-			self.__opener = urllib.request.build_opener()
+			opener = urllib.request.build_opener()
 		else:
 			proxyHandler = urllib.request.ProxyHandler({})
-			self.__opener = urllib.request.build_opener(proxyHandler)
+			opener = urllib.request.build_opener(proxyHandler)
+
+		opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+		# install the openen on the module-level
+		urllib.request.install_opener(opener)
 
 		proxies = urllib.request.getproxies()
-		gLogger.info(proxies)
 
-	def add_audio(self, name, audioPackage):
+		if proxies:
+			gLogger.info("proxies: " + str(proxies))
+
+	def __AddAudio(self, name, audioPackage):
 		self.__auidoArchive = audioPackage
 
-	def add_dictBase(self, name, dictSrc, format):
+	def __AddDictBase(self, name, dictSrc, format):
 
 		typ = format["Type"]
 		if(typ == "ZIP"):
@@ -509,41 +585,59 @@ class dictApp():
 
 		# self.__dictBaseLst.append(dictBase)
 
-		id = "dict" + str(len(self.__dictBaseDict) + 1)
-		self.__dictBaseDict.update({id: {"name": name, "dictBase": dictBase}})
+		dictId = "dict" + str(len(self.__dictBaseDict) + 1)
+		self.__dictBaseDict.update({dictId: {"name": name, "dictBase": dictBase}})
 
 	def add_tabs(self):
-		html = '''							<div id = "toggle_example" align = "right">- Hide Examples</div>
+		html = '''\n							<div id = "toggle_example" align = "right">- Hide Examples</div>
 							<p></p>'''
-
-		for key, item in self.__dictBaseDict.items():
-			self.get_browser().ExecuteFunction("addTab", key, item["name"], html);
+		for dictId, item in self.__dictBaseDict.items():
+			gLogger.info("addTab: %s: %s" %(dictId, item["name"]))
+			self.get_browser().ExecuteFunction("addTab", dictId, item["name"], html)
+			self.__dictId = dictId
 
 		self.get_browser().ExecuteFunction("bindSwitchTab");
-		# tabId = "dict1"
-		tabId = "dict" + str(self.__nTab + 1)
-		self.get_browser().ExecuteFunction("activeTab", tabId);
 
-		self.__homeRdy = True
-		if self.__word != None:
-			self.get_browser().ExecuteFunction("set_word", self.__word);
-			self.get_browser().ExecuteFunction("query_word");
+		# switch to dict1
+		self.__dictId = "dict1"
+		self.__curDictBase = self.get_curDB()
+		self.__dictParseFun = self.__curDictBase.get_parseFun()
+		self.get_browser().ExecuteFunction("active_Tab", self.__dictId);
+
+		self.__curDictBase = self.get_curDB()
+
+		self.__bHomeRdy = True
+		# if self.__word != None:
+			# self.get_browser().ExecuteFunction("set_word", self.__word);
+			# self.get_browser().ExecuteFunction("query_word");
 			# self.query_word(self.__word)
+
+	def __AddMenu(self, name, action, bActived = False):
+		self.__dictSysMenu.update({name: action})
+		# menuId = "dict" + str(len(self.__dictSysMenu) + 1)
+		menuId = name
+		self.get_browser().ExecuteFunction("fill_menu", menuId, name);
+		if bActived:
+			gLogger.info("Active Menu: %s" %menuId)
+			self.get_browser().ExecuteFunction("active_menu", menuId);
+
+	def fill_menus(self):
+		for key in self.__dictAgent.keys():
+			self.__AddMenu(key, "ActiveAgent", self.__dictAgent[key]["bActived"])
+		# self.add_menu("None", "active_agent")
+		self.get_browser().ExecuteFunction("bindMenus");
 
 	def get_browser(self):
 		return self.__window.get_browser()
 
-	def switch_tab(self, n):
-		gLogger.info("switch to tab: " + str(n))
-		self.__nTab = n - 1
+	def switch_tab(self, tabId):
+		# gLogger.info("switch to tab: " + tabId)
+		self.__dictId = tabId
 		self.__curDictBase = self.get_curDB()
-		self.__DictParseFun = self.__curDictBase.get_parseFun()
+		self.__dictParseFun = self.__curDictBase.get_parseFun()
 
 	def get_curDB(self):
-		# return self.__dictBaseLst[self.__nTab]
-		id = "dict" + str(self.__nTab + 1)
-		# print(self.__dictBaseDict)
-		return self.__dictBaseDict[id]["dictBase"]
+		return self.__dictBaseDict[self.__dictId]["dictBase"]
 
 	def playMP3(self, audio):
 
@@ -551,7 +645,7 @@ class dictApp():
 		self.get_browser().ExecuteFunction("playMP3", audio)
 		return True
 
-	def dwf_callbackfunc(self, blocknum, blocksize, totalsize):
+	def __dwf_callbackfunc(self, blocknum, blocksize, totalsize):
 		# global gLogger
 
 		'''回调函数
@@ -561,28 +655,52 @@ class dictApp():
 		'''
 		percent = 100.0 * blocknum * blocksize / totalsize
 		if percent > 100: percent = 100
-		gLogger.info("%.2download_filef%%" %percent)
+		gLogger.info("%.2f%% download file." %percent)
 
-	# To-Do:
-	# add progress hint
-	# detect proxy program before download
-	def download_file(self, url, local):
+	def download_file(self, dictPtr, url, local):
+		if self.__mutexDownloadFile.acquire(1):
+			dw = threading.Thread(target = self.__DownloadFileThread, args = (dictPtr, url, local, ))
+			dw.start()
+
+	def __DownloadFileThread(self, dictPtr, url, local):
 		gLogger.info("Going to download %s" %url)
+
 		errMsg = None
 		try:
-			self.__opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-			r = self.__opener.open(url)
-
-			with open(local, 'wb') as f:
-				f.write(r.read())
+			urllib.request.urlretrieve(url, local, self.__dwf_callbackfunc)
 		except urllib.error.HTTPError as err:
 			gLogger.error(err.code)
 			gLogger.error(err.reason)
 			errMsg = err.reason
 			# gLogger.error(err.headers)
 		except urllib.error.URLError as err:
-			gLogger.error(err)
-			errMsg = err
+			errMsg = str(err).replace("<", "")
+			errMsg = errMsg.replace(">", "")
+			gLogger.error(errMsg)
+
+		self.__mutexDownloadFile.release()
+
+		dictPtr.NotifyDownload(errMsg)
+
+	def download_file(self, url, local):
+		gLogger.info("Going to download %s" %url)
+		errMsg = None
+		try:
+			'''
+			r = self.__opener.open(url)
+			with open(local, 'wb') as f:
+				f.write(r.read())
+			'''
+			urllib.request.urlretrieve(url, local, self.__dwf_callbackfunc)
+		except urllib.error.HTTPError as err:
+			gLogger.error(err.code)
+			gLogger.error(err.reason)
+			errMsg = err.reason
+			# gLogger.error(err.headers)
+		except urllib.error.URLError as err:
+			errMsg = str(err).replace("<", "")
+			errMsg = errMsg.replace(">", "")
+			gLogger.error(errMsg)
 
 		return errMsg
 
@@ -597,6 +715,13 @@ class dictApp():
 		elif id == "btn_next": self.__QueryNext()
 		else:
 			gLogger.info(id)
+
+	def OnMenuClicked(self, menuId):
+		action = "self." + self.__dictSysMenu[menuId]
+		gLogger.info("action = %s" %action)
+
+		eval(action)(menuId)
+		self.get_browser().ExecuteFunction("active_menu", menuId);
 
 	def start_move(self, x, y):
 		self.__window.start_move(x, y)
@@ -619,7 +744,7 @@ class dictApp():
 				self.__NextStack.Push(self.__lastWord)
 				# gLogger.info("__PrevQueue: %d", self.__PrevQueue.GetSize())
 				if self.__NextStack.GetSize() >= 1:
-					self.get_browser().ExecuteFunction("disableButton", "btn_next", False);							
+					self.get_browser().ExecuteFunction("disableButton", "btn_next", False);					
 			else:
 				self.__PrevStack.Push(self.__lastWord)
 				# gLogger.info("__PrevQueue: %d", self.__PrevQueue.GetSize())
@@ -628,7 +753,7 @@ class dictApp():
 
 		self.__word = word
 
-		if self.__homeRdy == False:
+		if self.__bHomeRdy == False:
 			return
 
 		gLogger.info("word = %s;" %word)
@@ -640,7 +765,7 @@ class dictApp():
 
 		if(not bDictOK):
 			gLogger.error("dict: " + dict)
-			self.__record_miss_dict(word, dict)
+			self.__RecordMissDict(word, dict)
 			dict = '{\n' + \
 					'	"query": "' + word +  '",\n' + \
 					'	"sourceLanguage": "en",\n' + \
@@ -666,19 +791,20 @@ class dictApp():
 
 		if(not bAudioOK):
 			gLogger.error("audio: " + audio)
-			self.__record_miss_audio(word, audio)
+			self.__RecordMissAudio(word, audio)
 			audio = os.path.join(os.getcwd(), "audio", "WrongHint.mp3")
 
-		tabId = "dict" + str(self.__nTab + 1)
+		# tabId = "dict" + str(self.__nTab + 1)
 		# gLogger.info("tabId: " + tabId)
-		# gLogger.info("dictParseFun: " + self.__DictParseFun)
+		# gLogger.info("dictParseFun: " + self.__dictParseFun)
 
 		if bDictOK:
-			self.get_browser().ExecuteFunction(self.__DictParseFun, word, tabId, dict, audio)
+			# dict = 'Dictionary.py[L584] ERROR: <urlopen error [WinError 10060] 由于连接方在一段时后没有正确答复或连接的主机没有反应，连接尝试失败。>'
+			self.get_browser().ExecuteFunction(self.__dictParseFun, word, self.__dictId, dict, audio)
 			# gLogger.info("dict: " + dict)
 			# gLogger.info("audio: " + audio)
 		else:
-			self.get_browser().ExecuteFunction("dictJson", word, tabId, dict, audio)
+			self.get_browser().ExecuteFunction("dictJson", word, self.__dictId, dict, audio)
 
 		self.__lastWord = word
 
@@ -709,18 +835,18 @@ class dictApp():
 		# self.get_browser().ExecuteFunction("query_word");
 		self.query_word(word, 1)
 
-	def set_miss_record_file(self, miss_dict, miss_audio):
+	def __SetMissRecordFile(self, miss_dict, miss_audio):
 		self.__miss_dict = miss_dict
 		self.__miss_audio = miss_audio
 
-	def __record_miss_dict(self, word, why):
+	def __RecordMissDict(self, word, why):
 		with open(self.__miss_dict, mode = "a") as f:
-			f.write(word + ": " + why + "\r\n")
+			f.write(word + ": " + why + "\n")
 
-	def __record_miss_audio(self, word, why):
+	def __RecordMissAudio(self, word, why):
 		# self.__miss_audio.write(word + ": " + why + "\r\n")
 		with open(self.__miss_audio, mode = "a") as f:
-			f.write(word + ": " + why + "\r\n")
+			f.write(word + ": " + why + "\n\n")
 
 	'''
 	def speechWord(self, word, isUs):
@@ -785,126 +911,116 @@ class dictApp():
 			outFile.write(html)
 			outFile.close()
 
+	def __ReadConfigure(self):
+		global gLogger
+		with open(self._cfgDictFile, 'rb') as f:
+			datum = f.read()
+		self._cfgDict = json.loads(datum, strict = False)
+
+		version = self._cfgDict["common"]["ver"]
+		'''
+		logging 用作记录日志，默认分为六种日志级别（括号为级别对应的数值），NOTSET（0）、DEBUG（10）、INFO（20）、WARNING（30）、ERROR（40）、CRITICAL（50）。logging执行时输出大于等于设置的日志级别的日志信息
+		'''
+		bDebug = self._cfgDict["Debug"]["bEnable"]
+		if bDebug:
+			level = logging.DEBUG
+		else:
+			level = logging.INFO
+		
+		curPath = os.getcwd()
+
+		logFile = self._cfgDict["Debug"]["file"]
+		lFile = os.path.join(curPath, logFile)
+
+		gLogger = create_logger("Dictionary", lFile, level)
+		SetLogger(gLogger)
+
+		os_ver = ""
+		if IsWindows():
+			# platform.win32_ver(release='', version='', csd='', ptype='')
+			# Get additional version information from the Windows Registry and return a tuple (release, version, csd, ptype) referring to OS release, version number, CSD level (service pack) and OS type (multi/single processor).
+			os_ver = "Windoes " + platform.win32_ver()[0]
+		elif IsLinux():
+			gLogger.info("It's Linux!")
+			platform.linux_distribution()
+
+		gLogger.info(os_ver)
+		gLogger.info("CEF Python v{ver}".format(ver = cef.__version__))
+		gLogger.info("Python v{ver} {arch}".format(
+				ver = platform.python_version(), arch = platform.architecture()[0]))
+		gLogger.info("Tk v{ver}".format(ver = tk.Tcl().eval('info patchlevel')))
+		gLogger.info("Dictionary v{ver}".format(ver = version))
+
+		bIEAgent = self._cfgDict["Agents"]["bIEAgent"]
+		activeAgent = self._cfgDict["Agents"]["activeAgent"]
+
+		for agent in self._cfgDict["Agents"]["Info"]:
+			name = agent["Name"]
+			ip = agent["IP"]
+			program = agent["Program"]
+			self.__AddAgent(name, ip, program)
+		self.__AddAgent("None", "", "")
+		# self.__ActiveAgent(activeAgent)
+		self.ActiveAgent(activeAgent)
+
+		for tabGroup in self._cfgDict["Tabs"]:
+			name = tabGroup["Name"]
+			dict = tabGroup["Dict"]
+			format = tabGroup["Format"]
+			dictSrc = os.path.join(curPath, dict)
+			self.__AddDictBase(name, dictSrc, format)
+
+		audioGroup = self._cfgDict["Audio"][0]
+		name = audioGroup["Name"]
+		audio = audioGroup["Audio"]
+		audioFile = os.path.join(curPath, audio)
+		format = audioGroup["Format"]
+		typ = format["Type"]
+
+		if typ == "ZIP":
+			compression = format["Compression"]
+			compressLevel = format["Compress Level"]
+			audioPackage = AuidoArchive(audioFile, compression, compressLevel)
+
+		self.__AddAudio(name, audioPackage)
+	 
+		miss_dict = os.path.join(curPath, self._cfgDict["Miss"]["miss_dict"])
+		miss_audio = os.path.join(curPath, self._cfgDict["Miss"]["miss_audio"])
+		self.__SetMissRecordFile(miss_dict, miss_audio)
+
+		width = int(self._cfgDict["GUI"]["Width"])
+		height = int(self._cfgDict["GUI"]["Height"])
+		fileURL = os.path.join(curPath, self._cfgDict["GUI"]["html"])
+
+		showHiRatio = float(self._cfgDict["GUI"]["ShowHiRatio"])
+		showWiRatio = float(self._cfgDict["GUI"]["ShowWiRatio"])
+
+		self.__Start(width, height, fileURL, showHiRatio, showWiRatio)	
+
+	def __SaveConfigure(self):
+		gLogger.info("save configure")
+
+		# jsonStr = json.dumps(self._cfgDict)
+		with open(self._cfgDictFile, 'w') as f:
+			# f.write(jsonStr)
+			json.dump(self._cfgDict, f, indent=4)
+
 def main():
 
 	assert cef.__version__ >= "66.0", "CEF Python v66.0+ required to run this"
 
 	global gLogger
 
-	if IsWindows(): print("It's Windows!")
-	elif IsLinux(): print("It's Linux!")
-
-	curPath = os.getcwd()
-	cfgFile = os.path.join(curPath, "Dictionary.json")
-	# print(cfgFile)
-	with open(cfgFile, 'rb') as f:
-		datum = f.read()
-	cfg = json.loads(datum, strict = False)
-
-	version = cfg["common"]["ver"]
-
-	bDebug = cfg["Debug"]["bEnable"]
-	logFile = None
-	if bDebug:
-		logFile = cfg["Debug"]["file"]
-
-	lFile = os.path.join(curPath, logFile)
-
-	gLogger = create_logger("Dictionary", logFile)
-	SetLogger(gLogger)
-
-	gLogger.info("CEF Python v{ver}".format(ver = cef.__version__))
-	gLogger.info("Python v{ver} {arch}".format(
-			ver = platform.python_version(), arch = platform.architecture()[0]))
-	gLogger.info("Tk v{ver}".format(ver = tk.Tcl().eval('info patchlevel')))
-	gLogger.info("Dictionary v{ver}".format(ver = version))
-
 	app = dictApp()
 	SetApp(app)
 
-	bIEAgent = cfg["Agent"]["bIEAgent"]
-	bAgent = cfg["Agent"]["bAgent"]
-	ip = ""
-	name = ""
-	program = ""
-	# if bIEAgent:
-		# ip = ""
-		# name = ""
-		# program = ""
-	if bAgent:
-		nProxy = cfg["Agent"]["nAgent"]
-		agentGroup = cfg["Agent"]["Info"][nProxy - 1]
-		gLogger.info(agentGroup)
-		ip = agentGroup["IP"]
-		name = agentGroup["Name"]
-		program = agentGroup["Program"]
+	app.StartAndRun()
 
-	gLogger.info("ip = %s, name = %s, program = %s" %(ip, name, program))
-	app.set_agent(bIEAgent, bAgent, ip, name, program)
-
-	tabArray = cfg["Tab"]
-	for tabGroup in tabArray:
-		name = tabGroup["Name"]
-		dict = tabGroup["Dict"]
-		format = tabGroup["Format"]
-		dictSrc = os.path.join(curPath, dict)
-		app.add_dictBase(name, dictSrc, format)
-
-	audioGroup = cfg["Audio"][0]
-	name = audioGroup["Name"]
-	audio = audioGroup["Audio"]
-	audioFile = os.path.join(curPath, audio)
-	format = audioGroup["Format"]
-	typ = format["Type"]
-
-	if typ == "ZIP":
-		compression = format["Compression"]
-		compressLevel = format["Compress Level"]
-		audioPackage = AuidoArchive(audioFile, compression, compressLevel)
-
-	app.add_audio(name, audioPackage)
-
-	miss_dict = os.path.join(curPath, cfg["Miss"]["miss_dict"])
-	miss_audio = os.path.join(curPath, cfg["Miss"]["miss_audio"])
-	app.set_miss_record_file(miss_dict, miss_audio)
-
-	width = int(cfg["GUI"]["Width"])
-	height = int(cfg["GUI"]["Height"])
-	fileURL = os.path.join(curPath, cfg["GUI"]["html"])
-
-	sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
-
-	# Tk must be initialized before CEF otherwise fatal error (Issue #306)
-	settings = {
-		"debug": True,
-		"log_severity": cef.LOGSEVERITY_ERROR,
-		"log_file": "log//debug.log"
-	}
-	cef.Initialize(settings = settings)
-
-	# settings1 = {
-		# "debug": True,
-		# "log_file": "debug.log",
-		# "log_severity": cef.LOGSEVERITY_INFO,
-		# "product_version": "MyProduct/10.00",
-		# "user_agent": "MyAgent/20.00 MyProduct/10.00",
-	# }
-	# cef.Initialize(settings = settings1)
-	'''
-	switches = {
-		"enable-media-stream": "",
-		"proxy-server": "socks5://127.0.0.1:8888",
-		"disable-gpu": "",
-	}
-	cef.Initialize(switches=switches)
-	'''
-	# cef.Initialize()
-
-	app.start(width, height, fileURL)
+	# app.start()
 
 	cef.Shutdown()
 
-	app.close()
+	app.Close()
 
 	if os.path.exists("webrtc_event_logs"): shutil.rmtree("webrtc_event_logs")
 	if os.path.exists("blob_storage"): shutil.rmtree("blob_storage")

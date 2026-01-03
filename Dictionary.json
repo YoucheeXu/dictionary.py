@@ -1,84 +1,79 @@
 {
-	"common": {
-		"ver": "1.0.1.2"
-	},
-
-	"GUI": {
-		"Skin": "Skin/",
-		"html": "gui/GUI.html",
-		"Height": 548,
-		"Width": 701,
-		"BackColor": "67,160,255"
-	},
-
-	"Tab": [
-		{
-			"Name": "Google",
-			"Dict": "dict/Google.zip",
-			"Format": {
-				"Type": "ZIP",
-				"Compression": "ZIP_DEFLATED",
-				"Compress Level": 2
-			}
-		},
-		{
-			"Name": "15000",
-			"Dict": "dict/15000.dict",
-			"Format": {
-				"Type": "SQLite"
-			}
-		},
-		{
-			"Name": "Collins COBUILD",
-			"Dict": "dict/Collins COBUILD Advanced Learner's English-Chinese Dictionary.mdx",
-			"Format": {
-				"Type": "mdx"
-			}
-		}
-	],
-
-	"Audio": [
-		{
-			"Name": "America",
-			"Audio": "audio/Google.zip",
-			"Format": {
-				"Type": "ZIP",
-				"Compression": "ZIP_DEFLATED",
-				"Compress Level": 2
-			}			
-		}
-	],
-
-	"Agent": {
-		"bIEAgent": false,
-		"bAgent": false,
-		"nAgent": 1,
-		"Info": [
-			{
-				"Name": "XX-Net",
-				"IP": "http://127.0.0.1:8087",
-				"Program": "D:\\Green2\\XX-Net\\start.bat"
-			},
-			{
-				"Name": "Abroad",
-				"IP": "http://10.0.4.206:8118",
-				"Program": null
-			},
-			{
-				"Name": "Factory",
-				"IP": "http://10.0.4.225:3128",
-				"Program": null
-			}		
-		]
-	},
-
-	"Miss": { 
-		"miss_dict": "log/miss_dict.txt",
-		"miss_audio": "log/miss_audio.txt"
-	},
-
-	"Debug": {
-		"bEnable": true,
-		"file": "logs/Dictionary.log"
-	}
+    "common": {
+        "ver": "1.0.1.3"
+    },
+    "GUI": {
+        "Skin": "Skin/",
+        "html": "gui/GUI.html",
+        "Height": 548,
+        "Width": 701,
+        "BackColor": "67,160,255",
+        "ShowHiRatio": 0.5,
+        "ShowWiRatio": 0.5
+    },
+    "Tabs": [
+        {
+            "Name": "Google",
+            "Dict": "dict/Google.zip",
+            "Format": {
+                "Type": "ZIP",
+                "Compression": "ZIP_DEFLATED",
+                "Compress Level": 2
+            }
+        },
+        {
+            "Name": "15000",
+            "Dict": "dict/15000.dict",
+            "Format": {
+                "Type": "SQLite"
+            }
+        },
+        {
+            "Name": "Collins COBUILD",
+            "Dict": "dict/Collins COBUILD Advanced Learner's English-Chinese Dictionary.mdx",
+            "Format": {
+                "Type": "mdx"
+            }
+        }
+    ],
+    "Audio": [
+        {
+            "Name": "America",
+            "Audio": "audio/Google.zip",
+            "Format": {
+                "Type": "ZIP",
+                "Compression": "ZIP_DEFLATED",
+                "Compress Level": 2
+            }
+        }
+    ],
+    "Agents": {
+        "bIEAgent": false,
+        "activeAgent": "Factory",
+        "Info": [
+            {
+                "Name": "XX-Net",
+                "IP": "http://127.0.0.1:8087",
+                "Program": "D:\\Green2\\XX-Net\\start.bat"
+            },
+            {
+                "Name": "Abroad",
+                "IP": "http://10.0.4.206:8118",
+                "Program": null
+            },
+            {
+                "Name": "Factory",
+                "IP": "http://10.0.4.225:3128",
+                "Program": null
+            }
+        ]
+    },
+    "Miss": {
+        "miss_dict": "logs/miss.txt",
+        "miss_audio": "logs/miss.txt"
+    },
+    "Debug": {
+        "bEnable": true,
+        "file": "logs/Dictionary.log"
+    }
 }

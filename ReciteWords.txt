@@ -10,6 +10,12 @@
 Known Bugs:
 * out of index happen when last one was chopped
 
+v1.0.0.9
+* rand in recite word
+
+Bug Fixed:
+
+
 
 v1.0.0.8
 * update cfg file									OK
