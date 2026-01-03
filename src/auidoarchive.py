@@ -17,6 +17,8 @@ class AuidoArchive():
 
 		gLogger = GetLogger()
 
+		self.__bWritable = True
+
 		# self.__tempAudioDir = os.path.join(tempfile.gettempdir(), 'audio')
 		filepath, tempfilename = os.path.split(audioSrc)
 		filename, extension = os.path.splitext(tempfilename)
@@ -53,22 +55,29 @@ class AuidoArchive():
 						return True, audioFile
 					else:
 						return False, "Fail to read audio of " + word + " in file!"
-			else:
+			elif self.__bWritable:
 				audioURL = "https://ssl.gstatic.com/dictionary/static/sounds/oxford/" + word + "--_us_1.mp3"
 
-				GetApp().download_file(audioURL, audioFile);
+				err = GetApp().download_file(audioURL, audioFile);
+				if err:
+					return False, str(err)
+
 				if os.path.exists(audioFile):
 					with open(audioFile, 'rb') as f:
 						audio = f.read()
 						self.__audioZip.addFile(fileName, audio)
 					return True, audioFile
+			else:
+				return False, "no audio: " + word + " in file!"
 
 		except Exception as err:
 			return False, str(err)
 
 		return False, "Unknown Error!"
 
-	def del_audio(self, word):
+	def getWritable(self):
+		return self.__bWritable
 
+	def del_audio(self, word):
 		fileName = word[0] + "/" + word + ".mp3"
 		return self.__dictZip.delFile(fileName)

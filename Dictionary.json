@@ -1,6 +1,6 @@
 {
 	"common": {
-		"ver": "1.0.1.0"
+		"ver": "1.0.1.1"
 	},
 
 	"GUI": {
@@ -50,22 +50,23 @@
 	],
 
 	"Agent": {
+		"bIEAgent": false,
 		"bAgent": false,
 		"nAgent": 1,
 		"Info": [
 			{
-				"IP": "http://127.0.0.1:8087",
 				"Name": "XX-Net",
+				"IP": "http://127.0.0.1:8087",
 				"Program": "D:\\Green2\\XX-Net\\start.bat"
 			},
 			{
-				"IP": "http://10.0.4.206:8118",
 				"Name": "Abroad",
+				"IP": "http://10.0.4.206:8118",
 				"Program": null
 			},
 			{
-				"IP": "http://10.0.4.225:3128",
 				"Name": "Factory",
+				"IP": "http://10.0.4.225:3128",
 				"Program": null
 			}		
 		]

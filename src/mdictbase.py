@@ -2,13 +2,16 @@
 #-*- encoding:utf-8 -*-
 # -*- coding: utf-8 -*-
 #coding=utf-8
-'''
-V1.0 only support single mdx
-'''
+
 import tempfile
-import re
+import re, sys, os
 import struct
+
 from io import BytesIO
+
+from ripemd128 import ripemd128
+from pureSalsa20 import Salsa20
+
 # zlib compression is used for engine version >=2.0
 import zlib
 
@@ -27,10 +30,8 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
-from src.ripemd128 import ripemd128
-from src.puresalsa20 import Salsa20
-from src.dictbase import DictBase
-from src.globalvar import GetLogger
+from DictBase import DictBase
+from globalVars import GetLogger
 
 # def _unescape_entities(text):
 	# """
@@ -42,15 +43,20 @@ from src.globalvar import GetLogger
 	# text = text.replace(b'&amp;', b'&')
 	# return text
 
+'''
+V1.0 only support single mdx
+'''
 
+#################################################
+# read from mdd, mdx
 class MDictBase(DictBase):
-	""" read from mdd, mdx
-	"""
 
 	def __init__(self, dictSrc, isMdd = False, password = None):
 		global gLogger
 
 		gLogger = GetLogger()
+
+		self.__bWritable = False
 
 		self.__TempDir = tempfile.gettempdir()
 		self.__DictPackage = dictSrc
@@ -618,6 +624,9 @@ class MDictBase(DictBase):
 
 		if len(wdsLst) >= 1: return True
 		else: return False
+
+	def getWritable(self):
+		return self.__bWritable
 
 	def del_word(self, word):
 		raise NotImplementedError("don't support to delete word: " + word)

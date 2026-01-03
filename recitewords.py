@@ -856,8 +856,7 @@ class MyApp(object):
 	def __hide(self):
 		""""""
 		self.root.withdraw()
- 
-	#----------------------------------------------------------------------
+
 	def __openFrame(self, event = None):
 		""""""
 		#self.hide()

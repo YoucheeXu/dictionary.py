@@ -71,10 +71,6 @@ class ZipArchive:
 		self.__fileList.append(fileName)
 		return True
 
-	def delFile(self, fileName):
-		raise NotImplementedError("don't support to delete file: " + fileName)
-		return False
-
 	def readFile(self, fileName):
 
 		if(not self.bFileIn(fileName)):
@@ -109,3 +105,7 @@ class ZipArchive:
 			if match:
 				wdMatchLst.append(word)
 		return len(wdMatchLst)
+
+	def delFile(self, fileName):
+		raise NotImplementedError("don't support to delete file: " + fileName)
+		return False

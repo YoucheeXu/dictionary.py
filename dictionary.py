@@ -422,8 +422,7 @@ class RequestHandler(object):
 class dictApp():
 
 	def __init__(self):
-
-		self.__bAgent = False
+		self.__opener = None
 
 		# self.__dictBaseLst = []
 		self.__dictBaseDict = {}
@@ -457,11 +456,27 @@ class dictApp():
 		self.__homeRdy = False
 		self.__window.navigate(self.__fileURL)
 
-	def set_agent(self, ip, name, program):
-		self.__bAgent = True
-		self.__Proxy = ip
+	def set_agent(self, bIEAgent, bAgent, ip, name, program):
+
 		self.__Name = name
 		self.__Program = program
+
+		if bAgent:
+			gLogger.info("agent")
+			proxyHandler = urllib.request.ProxyHandler({
+				'http': ip,
+				'https': ip
+			})
+			self.__opener = urllib.request.build_opener(proxyHandler)
+		elif bIEAgent:
+			gLogger.info("ie_agent")
+			self.__opener = urllib.request.build_opener()
+		else:
+			proxyHandler = urllib.request.ProxyHandler({})
+			self.__opener = urllib.request.build_opener(proxyHandler)
+
+		proxies = urllib.request.getproxies()
+		gLogger.info(proxies)	
 
 	def add_audio(self, name, audioPackage):
 		self.__auidoArchive = audioPackage
@@ -538,31 +553,24 @@ class dictApp():
 	# add progress hint
 	# detect proxy program before download
 	def download_file(self, url, local):
-		# global gLogger
-
-		# try:
 		gLogger.info("Going to download %s" %url)
-		if(self.__bAgent == True):
-			proxyHandler = urllib.request.ProxyHandler({
-				'http': self.__Proxy,
-				'https': self.__Proxy
-			})
-			opener = urllib.request.build_opener(proxyHandler)
+		errMsg = None
+		try:
+			self.__opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+			r = self.__opener.open(url)
 
-		else:
-			opener = urllib.request.build_opener()
+			with open(local, 'wb') as f:
+				f.write(r.read())
+		except urllib.error.HTTPError as err:
+			gLogger.error(err.code)
+			gLogger.error(err.reason)
+			errMsg = err.reason
+			# gLogger.error(err.headers)
+		except urllib.error.URLError as err:
+			gLogger.error(err)
+			errMsg = err
 
-		opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-		r = opener.open(url)
-
-		with open(local, 'wb') as f:
-			f.write(r.read())
-
-		# except Exception as ex:
-			# gLogger.error("fail to download %s" %urls)
-			# gLogger.info("Exception: " + str(ex))
-			# return False
-		# return True
+		return errMsg
 
 	def OnButtonClicked(self, id):
 		# global gLogger
@@ -705,9 +713,13 @@ class dictApp():
 			# gLogger.info("OnTextChanged: no similiar words!")
 			return False
 
+		self.__window.get_browser().ExecuteFunction("clear_words_list")
+
 		for wd in wdsLst:
+			# gLogger.info("Goint to append %s" %wd)
 			self.__window.get_browser().ExecuteFunction("append_words_list", wd)
 			# gLogger.info("found word: %s" %wd)
+		# gLogger.info("Finished to append")
 
 	# Deprecated
 	def OnSaveHtml(self, html):
@@ -754,17 +766,25 @@ def main():
 	app = dictApp()
 	SetApp(app)
 
+	bIEAgent = cfg["Agent"]["bIEAgent"]
 	bAgent = cfg["Agent"]["bAgent"]
-	if bAgent == True:
+	ip = ""
+	name = ""
+	program = ""
+	# if bIEAgent:
+		# ip = ""
+		# name = ""
+		# program = ""
+	if bAgent:
 		nProxy = cfg["Agent"]["nAgent"]
-
 		agentGroup = cfg["Agent"]["Info"][nProxy - 1]
 		gLogger.info(agentGroup)
 		ip = agentGroup["IP"]
 		name = agentGroup["Name"]
 		program = agentGroup["Program"]
-		gLogger.info(ip, name, program)
-		app.set_agent(ip, name, program)
+
+	gLogger.info("ip = %s, name = %s, program = %s" %(ip, name, program))
+	app.set_agent(bIEAgent, bAgent, ip, name, program)
 
 	tabArray = cfg["Tab"]
 	for tabGroup in tabArray:

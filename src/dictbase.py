@@ -25,6 +25,10 @@ class DictBase(metaclass = abc.ABCMeta):
 		pass
 
 	@abc.abstractmethod
+	def getWritable(self):
+		pass
+
+	@abc.abstractmethod
 	def del_word(self, word):
 		pass
 

@@ -26,6 +26,7 @@ class GDictBase(DictBase):
 
 		gLogger = GetLogger()
 
+		self.__bWritable = True
 		self.__dictZip = ZipArchive(dictSrc, compression, compresslevel)
 		self.__tempDir = tempfile.gettempdir()
 		gLogger.info("tempDir: " + self.__tempDir)
@@ -43,13 +44,15 @@ class GDictBase(DictBase):
 
 		wordFile = None
 		try:
-			if(self.__dictZip.bFileIn(fileName)):
+			if self.__dictZip.bFileIn(fileName):
 				dict = self.__dictZip.readFile(fileName)
-			else:
+			elif self.__bWritable:
 				wordFile = os.path.join(self.__tempDir, word + ".json")
 				jsonURL = "http://dictionary.so8848.com/ajax_search?q=" + word
 				jsonURL = jsonURL.replace(" ", "%20")
-				GetApp().download_file(jsonURL, wordFile)
+				err = GetApp().download_file(jsonURL, wordFile)
+				if err:
+					return False, str(err)
 
 				if os.path.exists(wordFile):
 					with open(wordFile, 'rb') as f:
@@ -75,6 +78,9 @@ class GDictBase(DictBase):
 				else:
 					datum = "Fail to download: " + word
 					return False, datum
+			else:
+				datum = "no word: " + word + " in dict."
+				return False, datum
 
 			# print("%s = %s" %(word, dict))
 
@@ -138,6 +144,9 @@ class GDictBase(DictBase):
 
 		if len(wdMatchLst) >= 1: return True
 		else: return False
+
+	def getWritable(self):
+		return self.__bWritable
 
 	def del_word(self, word):
 		fileName = word[0] + "/" + word + ".json"

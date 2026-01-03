@@ -19,6 +19,8 @@ class SDictBase(DictBase):
 
 		gLogger = GetLogger()
 
+		self.__bWritable = False
+
 		self.__dictBase = SQLite()
 		self.__dictBase.Open(dictSrc)
 
@@ -44,7 +46,9 @@ class SDictBase(DictBase):
 		if len(wdsLst) >= 1: return True
 		else: return False
 
+	def getWritable(self):
+		return self.__bWritable
+
 	def del_word(self, word):
 		raise NotImplementedError("don't support to delete " + word)
 		return False
-	

@@ -10,29 +10,37 @@
 	* interrupt searching word any time
 * black list
 * menu
-* up and down key to choose list word
-* miniable
 * display or hide cmd window on command
 * delete file to recycle bin
 * singular
-* check it proxy or not in system
 * check net connection dose work or not
+* support proxy with authentication
 * add + to add tab and associate with new dictionary
-* double click word in input box don't trigger query word
 * function of other buttons
 	* four state button
 	* previous button
 	* next button
-
+* up and down key to choose list word
+* after fixing word (trim bank) update word in input box
+* miniable
+* support dict writable or not
 
 Known Bugs:
 * when disable title, can't input word in Ubuntu 18.04, see https://exceptionshub.com/tkinters-overideredirect-prevents-certain-events-in-mac-and-linux.html
 * movable don't work well
 * illegal close may cause zip error
-* paste word will cause two same words in words list sometimes
 * SDictBase doesn't display well
-* when query word by "entry://can", it will not pronounce automatically
 * close button can't trigger __del__
+* when trigger "entry://can", it won't pronounce automatically
+
+
+v1.0.1.1
+* double click word in input box don't trigger query word		OK
+* use ie proxy or not											OK
+
+Bugs Fixed:
+* paste word will cause two same words in words list			OK
+* some character cause crash in inputbox						OK
 
 
 v1.0.1.0

@@ -14,8 +14,13 @@ $(document).ready(function () {
     initButton3("btn_lookup", "./skin/lookup_btn.bmp", 110, 37);
 
 	// double click to query word
-	document.addEventListener('dblclick', function(){
-		// window.scrollTo(0, 0);
+	document.addEventListener('dblclick', function(e){
+
+		// console.log("Dobule Click!");
+		// console.log(e);
+		// console.log(e.target.id);
+		if ("word_input" == e.target.id) return;
+
 		var word = (document.selection && document.selection.createRange().text) ||
              (window.getSelection && window.getSelection().toString());
 		// log("info", "dblclick: " + word, false);
@@ -82,12 +87,18 @@ function hide_words_list(){
 }
 
 function get_word(){
-    word = $('#word_input').val();
-    // word = word.replace(/\ /g, "_");
-	// 去除字符串内两头的空格
-	word = word.replace(/^\s*|\s*$/g,"");
-	// word = word.trim();
-	// log("info", "get_word: " + word, false)
+	try {
+		word = $('#word_input').val();
+		// word = word.replace(/\ /g, "_");
+		// 去除字符串内两头的空格
+		word = word.replace(/^\s*|\s*$/g,"");
+		// word = word.trim();
+		// log("info", "get_word: " + word, false)
+	}
+    catch(error){
+		log("error", error, true);
+		return "";
+    }	
     return word;
 }
 
@@ -120,6 +131,7 @@ function query_word(word){
 
 function clear_input(){
     $('#word_input').val("");
+	clear_words_list();
     $('#words_list').hide();
     $("#contents_box").css("width", 701);
     $('#panel1 p').html("");
@@ -211,13 +223,9 @@ $('#word_input').bind('keyup', function(event){
 
         if(word.length >= 1) {
 			$(tabRef + ' p').html('你输入的内容为：' + word);
+			clear_words_list();
             $('#words_list').show();
             $("#contents_box").css("width", 500);
-            var obj = document.getElementById('words_list');
-            // 删除所有选项option
-            obj.options.length = 0;
-            // 添加一个选项
-            // obj.options.add(new Option(word)); //这个兼容IE与firefox
             try {
             	if (window.external) window.external.OnTextChanged(word);
             }
@@ -238,6 +246,12 @@ $('#word_input').bind('keyup', function(event){
 
 function playMP3(mp3){
 	// $("#jquery_jplayer_1").jPlayer("play");
+}
+
+function clear_words_list(){
+	var obj = document.getElementById('words_list');
+	// 删除所有选项option
+	obj.options.length = 0;
 }
 
 function append_words_list(word) {
