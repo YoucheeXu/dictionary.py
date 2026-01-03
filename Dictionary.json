@@ -1,6 +1,6 @@
 {
 	"common": {
-		"ver": "1.0.0.8"
+		"ver": "1.0.0.9"
 	},
 
 	"GUI": {
@@ -40,7 +40,12 @@
 	"Audio": [
 		{
 			"Name": "America",
-			"Audio": "audio/Google"
+			"Audio": "audio/Google.zip",
+			"Format": {
+				"Type": "ZIP",
+				"Compression": "ZIP_DEFLATED",
+				"Compress Level": 2
+			}			
 		}
 	],
 

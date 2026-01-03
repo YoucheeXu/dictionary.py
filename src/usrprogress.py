@@ -2,22 +2,19 @@
 #-*- encoding:utf-8 -*-
 # -*- coding: utf-8 -*-
 #coding=utf-8
-
-import os, sys
-
-from src.sqlite import SQLite
-from src.globalvar import GetLogger
-
 '''
 To-Do:
 * support create new dict and initialize it
 '''
+from src.sqlite import SQLite
+from src.globalvar import GetLogger
 
-########################################################################
-#Words: word, symbol, meaning, sentences, level, familiar, lastdate
-#Words: word, level, familiar, lastdate
 
 class UsrProgress():
+	"""
+		# Words: word, symbol, meaning, sentences, level, familiar, lastdate
+		# Words: word, level, familiar, lastdate
+	"""
 	def Open(self, dictSrc):
 		global gLogger
 

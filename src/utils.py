@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
-import logging
 import sys
+import logging
 
 # from globalVar import SetLogger
+
 
 def CreateLogger(loggerName, logFile = None, level = logging.INFO):
 

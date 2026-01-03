@@ -2,15 +2,6 @@
 #-*- encoding:utf-8 -*-
 # -*- coding: utf-8 -*-
 #coding=utf-8
-
-import os
-import tempfile
-import json
-
-from DictBase import DictBase
-from ZipArchive import ZipArchive
-from globalVars import GetLogger, GetApp
-
 '''
 v2.2 delete audio part
 
@@ -19,10 +10,15 @@ a/able.json in zip
 
 v2.0 support zip dict
 '''
+import os
+import tempfile
+import json
 
-# global gLogger
+from src.dictbase import DictBase
+from src.ziparchive import ZipArchive
+from src.globalvar import GetLogger, GetApp
 
-#################################################
+
 class GDictBase(DictBase):
 
 	def __init__(self, dictSrc, compression, compresslevel):

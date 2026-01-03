@@ -2,7 +2,6 @@
 #-*- encoding:utf-8 -*-
 # -*- coding: utf-8 -*-
 #coding=utf-8
-
 import abc
 
 from src.globalvar import GetLogger

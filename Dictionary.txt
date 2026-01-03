@@ -2,10 +2,6 @@
 * edit word on line in SDictBase
 * add "webDefinitions" of GDictBase
 * standard json (TemplateJson)
-* dynamic tab
-	* read cfg to create tab
-	* add x to tab to remove the tab
-	* add + to add tab and associate with new dictionary
 * zipArchive list split to path and name
 * word dict
 	* origin word (margins -> margin)
@@ -14,7 +10,7 @@
 	* interrupt any time in searching word
 * black list
 * menu
-* up and down key to choice list word
+* up and down key to choose list word
 * miniable
 * function of other buttons
 	* four state button
@@ -23,7 +19,25 @@
 * display or hide cmd window on command
 * delete file to recycle bin
 * singular
+* add + to add tab and associate with new dictionary
+* associate inner link, href="entry://can"
 
+Known Bugs:
+* when disable title, can't input word in Ubuntu 18.04, see https://exceptionshub.com/tkinters-overideredirect-prevents-certain-events-in-mac-and-linux.html
+* movable don't work well
+* illegal close may cause zip error
+* icon in taskbar
+* paste word will cause two same words in words list sometimes
+* SDictBase doesn't display well
+
+
+v1.0.0.9
+* package audio to one zip										OK
+* read cfg to create tab										OK
+* add x to tab to remove the tab								OK
+
+Bugs Fixed:
+* n of starts work												OK
 
 v1.0.0.8
 * use json as configuration file								OK
@@ -36,7 +50,7 @@ v1.0.0.8
 * support phase													OK
 * support single mdx/mdd										OK
 * support SDictBase												OK
-* slite AuidoArchive from GDictBase								OK
+* split AuidoArchive from GDictBase								OK
 
 Bugs Fixed:
 * some like "\x27" doesn't display well in html					OK

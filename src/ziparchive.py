@@ -2,27 +2,19 @@
 #-*- encoding:utf-8 -*-
 # -*- coding: utf-8 -*-
 #coding=utf-8
-
 '''
 v1.0.1 given compression format
 '''
-
-'''
-ZipArchive.py
-将文件归档到zip文件，并从zip文件中读取数据
-'''
-
-import os
-from zipfile import *
 import re
+from zipfile import *
 
-from globalVars import GetLogger
+from src.globalvar import GetLogger
 
-'''
-压缩模式有ZIP_STORED和ZIP_DEFLATED，ZIP_STORED只是存储模式，不会对文件进行压缩，这个是默认值，如果你需要对文件进行压缩，必须使用ZIP_DEFLATED模式
-'''
 
 class ZipArchive:
+	""" 将文件归档到zip文件，并从zip文件中读取数据
+		压缩模式有ZIP_STORED和ZIP_DEFLATED，ZIP_STORED只是存储模式，不会对文件进行压缩，这个是默认值，如果你需要对文件进行压缩，必须使用ZIP_DEFLATED模式
+	"""
 
 	# To-Do
 	def __init__(self, zip, compression, compresslevel):
@@ -32,7 +24,7 @@ class ZipArchive:
 
 		self.__zip = zip
 		try:
-			self.__archiveFile = ZipFile(self.__zip, 'a', compression = ZIP_DEFLATED, compresslevel = 2);
+			self.__archiveFile = ZipFile(self.__zip, 'a', compression, compresslevel)
 		except (BadZipFile, LargeZipFile) as reason:
 			gLogger.error(rason)
 		except Exception as error:

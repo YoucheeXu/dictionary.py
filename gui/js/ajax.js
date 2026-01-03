@@ -8,26 +8,11 @@ $(document).ready(function () {
 	//alert('\x26quot;');
 });
 
-$(".nav-tabs li a").click(function () {
-    var id = $(this).attr("id");
-    // switch(id) {
-    // case "collocation" :
-        // alert("case " + id + " was clicked!");
-        // break;
-    // case "googleenglish" :
-        // googleenglish_search();
-        // break;
-    // }
-    eval(id + "_search()");
-    $('#words_list').hide();
-    $("#contents_list_box").css("width", 701);    
-})
-
 function load_word(word, audio){
 	html = "\n					<div class = 'text'>" + word + "</div>\n" + 
 		"					<div class = 'sound' id = 'Player'>\n" + 
 		"						<button class = 'jp-play' id = 'playpause' title = 'Play'></button>\n" + 
-		"						<audio autoplay = 'autoplay' id = 'myaudio'>\n" + 
+		"						<audio autoplay = 'autoplay' id = 'webAudio'>\n" + 
 		"							<source src = " + audio + " type = 'audio/mpeg'>\n" + 
 		"							Your browser does not support the audio tag.\n" + 
 		"						</audio>\n" + 
@@ -42,34 +27,45 @@ function load_word(word, audio){
 	return html;
 }
 
-function google_dict(word, dict, audio){
+function dictJson(word, tabId, dict, audio){
 
 	if ($('#panel1 first').html() == "false") {
-		// alert("google_first: " + $('#panel1 first').html());
 		return;
 	}
-	// alert(dict);
-	// alert(audio);
-	// var obj = eval("(" + dict + ")");
-	// if (obj.ok != false) {
-		// var obj = eval("(" + obj.info + ")");
-		// var display = process_primary(obj.primaries);
+	try {
+		var obj = eval("(" + dict + ")");
+		var tabAlign = "\t\t\t\t\t\t\t";
+		var display = "\r\n" + process_primary(tabAlign + "\t", obj.primaries) + tabAlign;
+		// log("info", display, false);
 		// $('#panel1 p').html(display);
-		// // loadPlayer();
-		// loadPlayer2(audio);
-	// } else {
-		// google_suggest(word);
-		// // alert("no such " + word + " in google");
-		// window.external.wrongJson(word);
-	// }
+		$('#' + tabId + ' p').html(display);
+		$(".Word").html(load_word(word, audio));
+		load_starts(1);
+		loadPlayer();
+	}
+	catch(error){
+		log("error", error, true);
+	}
 
-	var obj = eval("(" + dict + ")");
-	var tabAlign = "\t\t\t\t\t\t\t";
-	var display = "\r\n" + process_primary(tabAlign + "\t", obj.primaries) + tabAlign;
-	$('#panel1 p').html(display);
-	$(".Word").html(load_word(word, audio));
-	load_starts(0);
-	loadPlayer();
+	$('#panel1 first').html("false");
+}
+
+
+function dictHtml(word, tabId, dict, audio){
+
+	if ($('#panel1 first').html() == "false") {
+		return;
+	}
+	try {
+		var display = dict;
+		$('#' + tabId + ' p').html(display);
+		$(".Word").html(load_word(word, audio));
+		load_starts(2);
+		loadPlayer();
+	}
+	catch(error){
+		log("error", error, true);
+	}
 
 	$('#panel1 first').html("false");
 }
@@ -80,7 +76,7 @@ function google_search(){
 		// alert("google_first: " + $('#panel1 first').html());
 		return;
 	}
-
+	debugger;
 	// var word = $('#queryword').html();
 	// word = word.replace(/\ /g, "_");
 	var word = get_word();
@@ -145,7 +141,7 @@ function google_search(){
 					// alert(XMLHttpRequest.status);  
 					// alert();
 					// alert('读取超时，请检查网络连接');
-					$('#panel1 p').html("error occur when find " + word + " in google" + "<br>" + XMLHttpRequest.status + "<br>" + XMLHttpRequest.readyState + "<br>" + textStatus);
+					$('#panel1 p').html("Error occur when find " + word + " in google" + "<br>" + XMLHttpRequest.status + "<br>" + XMLHttpRequest.readyState + "<br>" + textStatus);
 					// alert("error occur when find " + word + " in google");
 		}
 	});
@@ -231,7 +227,6 @@ function norm_search() {
 	}
 }
 
-// $('#collocation').click(function(){})
 function collocation_search(){
 	if ($('#panel2 first').html() != "true") {
 		// alert("collocation_first: " + $('#panel2 first').html());
@@ -250,7 +245,6 @@ function collocation_search(){
 	$('#panel2 first').html("false");
 }
 
-// $('#wordnet').click(function(){});
 function wordnet_search(){
     if ($('#panel3 first').html() != "true") {
 		// alert("wordnet_first: " + $('#panel3 first').html());
@@ -334,7 +328,6 @@ function wordnet_search(){
 	$('#panel3 first').html("false");
 }
 
-// $('#googleenglish').click(function(){});
 function googleenglish_search(){
 	// var word = $('#queryword').html();
     // word = word.replace(/\ /g, "_");

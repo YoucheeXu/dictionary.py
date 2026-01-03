@@ -2,13 +2,12 @@
 #-*- encoding:utf-8 -*-
 # -*- coding: utf-8 -*-
 #coding=utf-8
-
 import sqlite3
 import os
 
 from src.globalvar import GetLogger
 
-########################################################################
+
 class SQLite():
 
 	def Open(self, file):
@@ -24,7 +23,7 @@ class SQLite():
 		self.__conn = sqlite3.connect(file)
 		self.__cur = self.__conn.cursor()
 		gLogger.info(file + "is OK to open!")
-		return True;
+		return True
 
 	def GetAll(self, word, txtLst):
 		# global gLogger
@@ -32,7 +31,7 @@ class SQLite():
 		try:
 			command = "select * from Words where word = '" + word + "'"
 			self.__cur.execute(command)
-			content = self.__cur.fetchone();
+			content = self.__cur.fetchone()
 		except:
 			gLogger.error(command)
 
@@ -55,7 +54,7 @@ class SQLite():
 		try:
 			command = "select " + item + " from Words where word = '" + word + "'"
 			self.__cur.execute(command)
-			content = self.__cur.fetchone();
+			content = self.__cur.fetchone()
 			# if content:
 				# return content[0]
 			# else :
@@ -69,7 +68,7 @@ class SQLite():
 		command = "select count(*) from Words where " + where
 		# gLogger.info(command)
 		self.__cur.execute(command)
-		number = self.__cur.fetchone()[0];
+		number = self.__cur.fetchone()[0]
 		# gLogger.info(number)
 		return number
 
@@ -121,7 +120,7 @@ class SQLite():
 		command = "select word from Words where " + where
 		gLogger.info(command)
 		self.__cur.execute(command)
-		content = self.__cur.fetchall();
+		content = self.__cur.fetchall()
 		if content:
 			wdsLst = wdsLst.extend(content)
 			gLogger.info("Got wordslst: %d." %len(content))

@@ -67,7 +67,7 @@
 		},
 		"AudioBase": {
 			"Name": "Google",
-			"Dict": "audio/Google"
+			"Dict": "audio/Google-us.zip"
 		}
 	},
 

@@ -2,19 +2,18 @@
 #-*- encoding:utf-8 -*-
 # -*- coding: utf-8 -*-
 #coding=utf-8
+'''
+'''
 from src.dictbase import DictBase
 from src.sqlite import SQLite
-
 from src.globalvar import GetLogger
 
-'''
-'''
-
-########################################################################
-#Words: word, symbol, meaning, sentences, level, familiar, lastdate
-#Words: word, symbol, meaning, sentences
 
 class SDictBase(DictBase):
+	""" 
+		# Words: word, symbol, meaning, sentences, level, familiar, lastdate
+		# Words: word, symbol, meaning, sentences
+	"""
 	def __init__(self, dictSrc):
 		global gLogger
 

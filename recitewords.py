@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 import os
 import platform
+import datetime
+import time
+import random
+import json
 
 try:	# python3
 	import tkinter as tk
@@ -10,17 +14,12 @@ except ImportError:
 	import Tkinter as tk
 	import tkMessageBox as msgBox
 
-import datetime
-import time
-import random
-
-import json
-
 from src.usrprogress import UsrProgress
 from src.sdictbase import SDictBase
 from src.auidoarchive import AuidoArchive
 from src.globalvar import *
 from src.utils import *
+
 
 def main():
 	global gApp, gLogger, gCfg
@@ -64,8 +63,6 @@ def main():
 
 class MainFrame(tk.Toplevel):
 	""""""
-
-	#----------------------------------------------------------------------
 	def __init__(self, size):
 		"""Constructor"""
 		tk.Toplevel.__init__(self)
@@ -162,7 +159,7 @@ class MainFrame(tk.Toplevel):
 		dict = "dict\\15000.dict"
 		dictFile = os.path.join(curPath, dict)
 		gLogger.info("dict: %s" %dictFile)
-		audio = "audio\\Google"
+		audio = "audio\\Google-us.zip"
 		audioFile = os.path.join(curPath, audio)
 		gLogger.info("audio: %s" %audioFile)
 		progress = "dict\\XYQ.progress"
@@ -818,9 +815,8 @@ class MainFrame(tk.Toplevel):
 		# self.__usrProgress.Close()
 		os._exit(0)
 
-########################################################################
-class MyApp(object):
 
+class MyApp(object):
 	def __init__(self, parent):
 		"""Constructor"""
 		self.root = parent
@@ -857,7 +853,6 @@ class MyApp(object):
 
 		#self.__openFrame()
 
-	#----------------------------------------------------------------------
 	def __hide(self):
 		""""""
 		self.root.withdraw()
@@ -899,7 +894,6 @@ class MyApp(object):
 		self.__finishCount.set("Words has recited: %d" %finishCount)
 		return
 
-	#----------------------------------------------------------------------
 	def __onCloseFrame(self, frame):
 		""""""
 		frame.destroy()
@@ -914,7 +908,6 @@ class MyApp(object):
 		self.__mainFrame.onCloseWindow()
 		return
  
-	#----------------------------------------------------------------------
 	def __show(self):
 		""""""
 		self.root.update()
@@ -924,6 +917,6 @@ class MyApp(object):
 		self.__onCloseWindow()
 		# os._exit(0)
 
-#----------------------------------------------------------------------
+
 if __name__ == "__main__":
 	main()

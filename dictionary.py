@@ -109,8 +109,16 @@ def main():
 	audioGroup = cfg["Audio"][0]
 	name = audioGroup["Name"]
 	audio = audioGroup["Audio"]
-	audioPath = os.path.join(curPath, audio)
-	app.AddAudio(name, audioPath)
+	audioFile = os.path.join(curPath, audio)
+	format = audioGroup["Format"]
+	typ = format["Type"]
+	
+	if typ == "ZIP":
+		compression = format["Compression"]
+		compressLevel = format["Compress Level"]
+		audioPackage = AuidoArchive(audioFile, compression, compressLevel)
+
+	app.AddAudio(name, audioPackage)
 
 	miss_dict = os.path.join(curPath, cfg["Miss"]["miss_dict"])
 	miss_audio = os.path.join(curPath, cfg["Miss"]["miss_audio"])
@@ -153,29 +161,16 @@ def main():
 	cef.Initialize(switches=switches)
 	'''
 	# cef.Initialize()
+
 	app.mainloop()
 	cef.Shutdown()
 
 	gLogger.info("All are done!")
 
-def set_appwindow(root):
-	if IsWindows():
-		hwnd = windll.user32.GetParent(root.winfo_id())
-		# exStyle = windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
-		# exStyle &= ~WS_EX_TOOLWINDOW
-		# exStyle |= WS_EX_APPWINDOW
-		# res = windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, exStyle)
-		
-		style = windll.user32.GetWindowLongW(hwnd, GWL_STYLE)
-		style &= ~WS_CAPTION
-		res = windll.user32.SetWindowLongW(hwnd, GWL_STYLE, style)
-		# re-assert the new window style
-
-		# root.wm_withdraw()
-		# root.after(10, lambda: root.wm_deiconify())
-	pass
-
 class MainFrame(tk.Frame):
+
+	def __init__(self, app):
+		self.__app = app
 
 	def Start(self, root, width, height, fileURL):
 		# global gLogger
@@ -229,7 +224,8 @@ class MainFrame(tk.Frame):
 
 		# BrowserFrame
 		# self.browser_frame = BrowserFrame(self, fileURL, self.navigation_bar)
-		self.browser_frame = BrowserFrame()
+		# self.browser_frame = BrowserFrame()
+		self.browser_frame = BrowserFrame(self.__app)
 		self.browser_frame.init(self, fileURL, self.navigation_bar)
 		self.browser_frame.grid(row = 1, column = 0,
 								 sticky = (tk.N + tk.S + tk.E + tk.W))
@@ -303,10 +299,26 @@ class MainFrame(tk.Frame):
 	def restore(self):
 		self.master.wm_deiconify()
 
+	def __set_appwindow(self):
+		if IsWindows():
+			hwnd = windll.user32.GetParent(self.master.winfo_id())
+			# exStyle = windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+			# exStyle &= ~WS_EX_TOOLWINDOW
+			# exStyle |= WS_EX_APPWINDOW
+			# res = windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, exStyle)
+
+			style = windll.user32.GetWindowLongW(hwnd, GWL_STYLE)
+			style &= ~WS_CAPTION
+			res = windll.user32.SetWindowLongW(hwnd, GWL_STYLE, style)
+			# re-assert the new window style
+
+			# self.master.wm_withdraw()
+			# self.master.after(10, lambda: self.master.wm_deiconify())
+
 	def frame_mapped(self, e):
 		self.master.update_idletasks()
 		# self.master.overrideredirect(True)
-		self.master.after(1, lambda: set_appwindow(self.master))
+		self.master.after(1, lambda: self.__set_appwindow())
 		self.master.state('normal')
 
 	def setup_icon(self):
@@ -319,6 +331,9 @@ class MainFrame(tk.Frame):
 			self.master.call("wm", "iconphoto", self.master._w, self.icon)
 
 class BrowserFrame(tk.Frame):
+
+	def __init__(self, app):
+		self.__app = app
 
 	def init(self, master, fileURL, navigation_bar = None):
 		self.navigation_bar = navigation_bar
@@ -369,7 +384,8 @@ class BrowserFrame(tk.Frame):
 		js.SetObject('external', GetApp())
 		self.browser.SetJavascriptBindings(js)
 
-		self.browser.SetClientHandler(LoadHandler(self))
+		# self.browser.SetClientHandler(LoadHandler(self))
+		self.browser.SetClientHandler(LoadHandler(self.__app))
 		self.browser.SetClientHandler(FocusHandler(self))
 		self.message_loop_work()
 
@@ -407,6 +423,7 @@ class BrowserFrame(tk.Frame):
 			self.browser.NotifyMoveOrResizeStarted()
 
 	def on_mainframe_configure(self, width, height):
+		# gLogger.info("on_mainframe_configure")
 		if self.browser:
 			if IsWindows():
 				WindowUtils.OnSize(self.get_window_handle(), 0, 0, 0)
@@ -441,12 +458,19 @@ class BrowserFrame(tk.Frame):
 
 class LoadHandler(object):
 
-	def __init__(self, browser_frame):
-		self.browser_frame = browser_frame
+	# def __init__(self, browser_frame):
+	def __init__(self, app):
+		# self.browser_frame = browser_frame
+		self.__app = app;
 
-	def OnLoadStart(self, browser, **_):
-		if self.browser_frame.master.navigation_bar:
-			self.browser_frame.master.navigation_bar.set_url(browser.GetUrl())
+	# def OnLoadStart(self, browser, **_):
+		# if self.browser_frame.master.navigation_bar:
+			# self.browser_frame.master.navigation_bar.set_url(browser.GetUrl())
+		# # gLogger.info("LoadHandler.OnLoadStart")
+
+	def OnLoadEnd(self, browser, **_):
+		browser.ExecuteFunction("log", "info", "LoadHandler.OnLoadEnd", False)
+		self.__app.AddTabs()
 
 class FocusHandler(object):
 
@@ -481,7 +505,8 @@ class dictApp():
 		self.__enableMove = False
 		self.__bAgent = False
 
-		self.__dictBaseLst = []
+		# self.__dictBaseLst = []
+		self.__dictBaseDict = {}
 		self.__nTab = 0
 		self.__curDictBase = None
 
@@ -497,7 +522,8 @@ class dictApp():
 		self.__DictParseFun = self.__curDictBase.get_parseFun()
 
 		self.__root = tk.Tk()
-		self.__window = MainFrame()
+
+		self.__window = MainFrame(self)
 		self.__window.Start(self.__root, width, height, fileURL)
 
 	def SetAgent(self, ip, name, program):
@@ -506,8 +532,8 @@ class dictApp():
 		self.__Name = name
 		self.__Program = program
 
-	def AddAudio(self, name, audioPath):
-		self.__auidoArchive = AuidoArchive(audioPath)
+	def AddAudio(self, name, audioPackage):
+		self.__auidoArchive = audioPackage
 
 	def AddDictBase(self, name, dictSrc, format):
 		# global gLogger
@@ -522,19 +548,37 @@ class dictApp():
 		elif(typ == "mdx"):
 			dictBase = MDictBase(dictSrc)
 
-		self.__dictBaseLst.append(dictBase)
+		# self.__dictBaseLst.append(dictBase)
+
+		id = "dict" + str(len(self.__dictBaseDict) + 1)
+		self.__dictBaseDict.update({id: {"name": name, "dictBase": dictBase}})
+
+	def AddTabs(self):
+		html = '''							<div id = "toggle_example" align = "right">- Hide Examples</div>
+							<p></p>'''
+					
+		for key, item in self.__dictBaseDict.items():
+			self.get_browser().ExecuteFunction("addTab", key, item["name"], html);
+
+		self.get_browser().ExecuteFunction("bindSwitchTab");
+		tabId = "dict1"
+		self.get_browser().ExecuteFunction("activeTab", tabId);
 
 	def get_browser(self):
 		return self.__window.get_browser()
 
 	def SwitchTab(self, n):
+		gLogger.info("switch to tab: " + str(n))
 		self.__nTab = n - 1
 		self.__curDictBase = self.get_curDB()
 		self.__DictParseFun = self.__curDictBase.get_parseFun()
 		# print(self.__nTab)
 
 	def get_curDB(self):
-		return self.__dictBaseLst[self.__nTab]
+		# return self.__dictBaseLst[self.__nTab]
+		id = "dict" + str(self.__nTab + 1)
+		# print(self.__dictBaseDict)
+		return self.__dictBaseDict[id]["dictBase"]
 
 	def mainloop(self):
 		self.__window.mainloop()
@@ -543,7 +587,7 @@ class dictApp():
 		# global gLogger
 
 		gLogger.info("going to play " + audio)
-		self.__window.get_browser().ExecuteFunction("playMP3", audio)
+		self.get_browser().ExecuteFunction("playMP3", audio)
 		return True
 
 	def dwf_callbackfunc(self, blocknum, blocksize, totalsize):
@@ -681,13 +725,14 @@ class dictApp():
 			self.RecordMissAudio(word)
 			audio = os.path.join(os.getcwd(), "audio", "WrongHint.mp3")
 
-		tabId = "panel" + str(self.__nTab + 1)
+		tabId = "dict" + str(self.__nTab + 1)
+		gLogger.info("tabId: " + tabId)
 
 		# gLogger.info(dict)
 		if bDictOK:
-			self.__window.get_browser().ExecuteFunction(self.__DictParseFun, word, tabId, dict, audio)
+			self.get_browser().ExecuteFunction(self.__DictParseFun, word, tabId, dict, audio)
 		else:
-			self.__window.get_browser().ExecuteFunction("dictJson", word, tabId, dict, audio)
+			self.get_browser().ExecuteFunction("dictJson", word, tabId, dict, audio)
 
 	def SetMissRecordFile(self, miss_dict, miss_audio):
 		self.__miss_dict = open(miss_dict, mode = "a")

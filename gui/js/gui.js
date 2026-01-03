@@ -7,10 +7,29 @@ $(document).ready(function () {
     initButton3("btn_close", "./skin/close_btn.bmp", 43, 21);
 
     // input_panel
+	initButton3("btn_prev", "./skin/prev_btn.bmp", 45, 37);
     initButton3("btn_next", "./skin/next_btn.bmp", 40, 37);
     initButton3("btn_del", "./skin/delete_item.bmp", 30, 34);
     initButton3("btn_drop", "./skin/combobox_drop_btn.bmp", 20, 34);
     initButton3("btn_lookup", "./skin/lookup_btn.bmp", 110, 37);
+
+	// double click to query word
+	document.addEventListener('dblclick', function(){
+		// window.scrollTo(0, 0);
+		var word = (document.selection && document.selection.createRange().text) ||
+             (window.getSelection && window.getSelection().toString());
+		// log("info", "dblclick: " + word, false);
+		word = word.trim();
+		set_word(word);
+		query_word(word);
+	});
+
+	$("#tabContainer").tabs({
+		data: [],
+	})
+
+	// addTab("tab1", "tab1-haah", "");
+	// addTab("tab2", "tab2-haah", "");
 });
 
 function disableButton(id, is) {
@@ -53,31 +72,51 @@ function initButton3(id, img, width, height){
     // alert($("#btn_prev").css('hover'));
 }
 
+function set_word(word){
+	$('#word_input').val(word)
+}
+
+function hide_words_list(){
+	$('#words_list').hide();
+	$("#contents_box").css("width", 701);
+}
+
 function get_word(){
     word = $('#word_input').val();
-    word = word.replace(/\ /g, "_");
-    // alert("Got word: " + word);
+    // word = word.replace(/\ /g, "_");
+	// 去除字符串内两头的空格
+	word = word.replace(/^\s*|\s*$/g,"");
+	// word = word.trim();
+	// log("info", "get_word: " + word, false)
     return word;
 }
 
-function query_word(){
-	var word = get_word();
-	// alert("query word: " + word);
+function query_word(word){
 
-	$('#words_list').hide();
-	$("#contents_box").css("width", 701);
+	if (word == null || word == undefined || word == ''){
+		word = get_word();
+	}
+
+	if(word.length < 1){
+		tabRef = get_active_tab_href();
+        $(tabRef + ' p').html('');
+		return false;
+	}
+
+	// log("info", "query_word: " + word, false)
 
 	try {
 		if(window.external) window.external.QueryWord(word);
 		$('#word_input').focus();
 		$('#word_input').select();
+		return true;
     }
     catch(error){
-        google_search();
-        console.log(error);
-        // alert(error);
+        // google_search();
+		log("error", error, true);
     }
     // $("#google").tab('show');
+	return false;
 }
 
 function clear_input(){
@@ -92,7 +131,8 @@ $(":button").click(function(){
     var id = $(this).attr("id");
 	// alert(id + " button is clicked!")
     if(id == "btn_lookup"){
-		query_word();
+		hide_words_list();
+        query_word();
 	}
     else if(id == "btn_del") {
         clear_input();
@@ -120,18 +160,58 @@ $(".top_panel").mouseleave(function(event){
 	if(window.external) window.external.stopMove(event.screenX, event.screenY);
 });
 
+function bindSwitchTab(){
+
+	$(".nav-tabs li a").click(function () {
+		try{
+			// var id = $(this).attr("id");
+			// log("info", "id: " + id, false);
+			// eval(id + "_search()");
+			// log("info", "SwitchTab", false);
+
+			var tabRef = $(this).attr("href");
+			log("info", "Switch to tabId: " + tabRef, false);
+			$(tabRef + ' p').html('');
+
+			tabNum = tabRef.slice(5);
+			log("info", "tabNum: " + tabNum, false);
+			var n = parseInt(tabNum);
+			if(window.external){
+				window.external.SwitchTab(n);
+			}
+			query_word();
+		}
+		catch(error){
+			log("error", error, true);
+		}
+
+		$('#words_list').hide();
+		$("#contents_list_box").css("width", 701);    
+	})
+}
+
+function get_active_tab_href(){
+	return $(".nav-tabs").find('li.active').children('a').attr('href');
+}
+
 $(function(){
 $('#word_input').bind('keyup', function(event){
-	// if (window.external) window.external.log(event);
-	// console.log(error);
     if(event.keyCode == "13") {   //return key
         // alert('你输入的内容为：' + $('#word_input').val());
-        query_word();
+		hide_words_list();
+		query_word();
     }
     else {
         var word = $('#word_input').val();
-        $('#panel1 p').html('你输入的内容为：' + word);
-        if(word.length >= 2) {
+		// get current tabRef
+
+        // $('#panel1 p').html('你输入的内容为：' + word);
+		// tabRef = $(".nav-tabs").children('.active').attr('href');
+		tabRef = get_active_tab_href();
+		// log("info", tabRef, false);
+
+        if(word.length >= 1) {
+			$(tabRef + ' p').html('你输入的内容为：' + word);
             $('#words_list').show();
             $("#contents_box").css("width", 500);
             var obj = document.getElementById('words_list');
@@ -143,7 +223,7 @@ $('#word_input').bind('keyup', function(event){
             	if (window.external) window.external.OnTextChanged(word);
             }
             catch(error){
-				console.log(error);
+				log("error", error, true);
             }
             // append_words_list(word);
         }
@@ -151,6 +231,7 @@ $('#word_input').bind('keyup', function(event){
             // clear_input();
             $('#words_list').hide();
             $("#contents_box").css("width", 701);
+			$(tabRef + ' p').html('');
         }
     }
     });
@@ -166,14 +247,30 @@ function append_words_list(word) {
 	// alert("<option value = '" + no + "'>" + word + "</option>");
 }
 
-function addTab(){
-	// <li>
-		// <a href = "#panel4" id = "googleenglish" data-toggle = "tab" >Google English</a>
-	// </li>
+function addTab(id, name, html){
+	$("#tabContainer").data("tabs").addTab({id: id, text: name, closeable: true, html: html});
+	console.log("addTab: ", id, name, html);
+}
 
-	// <div id = "panel4" class = "tab-pane">
-		// <!-- <first style = "display: none">true</first> -->
-		// <h4>to come soon</h4>
-		// <p></p>
-	// </div>
+function activeTab(tabId){
+	$("#tabContainer").data("tabs").showTab(tabId);
+}
+
+function log(lvl, info, isException){
+	try{
+		console.log(info);
+
+		if(window.external){
+			if(isException == true){
+				info = "Name: " + info.nameinfo + "\r\n\t" +
+					"message: " + info.message + "\r\n\t" +
+					"description: " + info.description + "\r\n\t" +
+					"stack: " + info.stack;
+			}
+			window.external.log(lvl, info);
+		}
+	}
+	catch(error){
+		console.log(error);
+    }
 }

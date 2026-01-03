@@ -2,71 +2,69 @@
 #-*- encoding:utf-8 -*-
 # -*- coding: utf-8 -*-
 #coding=utf-8
-
 import os
-import tempfile
+import shutil
+import time
+from zipfile import ZIP_DEFLATED
 
+from src.ziparchive import ZipArchive
 from src.globalvar import GetLogger, GetApp
 
-#################################################
-class AuidoArchive():
 
-	def __init__(self, audioPath):
+class AuidoArchive():
+	def __init__(self, audioSrc, compression = ZIP_DEFLATED, compresslevel = 2):
 		global gLogger
 
 		gLogger = GetLogger()
 
-		self.__tempDir = tempfile.gettempdir()
-		gLogger.info("tempDir: " + self.__tempDir)
-		self.__audioPath = audioPath
+		# self.__tempAudioDir = os.path.join(tempfile.gettempdir(), 'audio')
+		filepath, tempfilename = os.path.split(audioSrc)
+		filename, extension = os.path.splitext(tempfilename)
+		self.__tempAudioDir = os.path.join(filepath, filename)
+		if not os.path.exists(self.__tempAudioDir):
+			os.makedirs(self.__tempAudioDir)
+		gLogger.info("tempAudioDir: " + self.__tempAudioDir)
+
+		self.__audioZip = ZipArchive(audioSrc, compression, compresslevel)
+
+	def __del__(self):
+		if os.path.exists(self.__tempAudioDir):
+			shutil.rmtree(self.__tempAudioDir)
+		time.sleep(1)
+		if os.path.isdir(self.__tempAudioDir) == False:
+			print("OK to remove %s" %self.__tempAudioDir)
 
 	def query_audio(self, word):
 
-		'''
-		fileName = word + ".mp3"
-		if(self.__audioZip.bFileIn(fileName)):
-			audio = self.__audioZip.readFile(fileName)
-		else:
-			audioFile = os.path.join(self.__tempDir, word + ".mp3")
-			audioURL = "https://ssl.gstatic.com/dictionary/static/sounds/oxford/" + word + "--_us_1.mp3"
+		# fileName = word + ".mp3"
+		fileName = word[0] + "/" + word + ".mp3"
 
-			GetApp().download_file(audioURL, audioFile);
-			if os.path.exists(audioFile):
-				with open(audioFile, 'rb') as f:
-					audio = f.read()
-					self.__audioZip.addFile(fileName, audio)
+		audioFile = os.path.join(self.__tempAudioDir, word + ".mp3")
 
-				os.remove(audioFile)
-
-		return dict, audio
-		'''
-
-		audioDir = os.path.join(self.__audioPath, word[0])
-
-		audio = os.path.join(audioDir, word + ".mp3")
-		# print(audio)
-
-		try:
-			if(not os.path.exists(audio)):
+		try:		
+			if(self.__audioZip.bFileIn(fileName)):
+				audio = self.__audioZip.readFile(fileName)
+				if audio:
+					if os.path.exists(audioFile) == False:
+						with open(audioFile, 'wb') as f:
+							f.write(audio)
+					return True, audioFile
+			else:
 				audioURL = "https://ssl.gstatic.com/dictionary/static/sounds/oxford/" + word + "--_us_1.mp3"
-				audioURL = audioURL.replace(" ", "%20")
-				if (not os.path.exists(audioDir)):
-					os.mkdir(audioDir)
-				GetApp().download_file(audioURL, audio);
-				if (not os.path.exists(audio)):
-					audio = "Fail to download: " + word
-					return False, audio
+
+				GetApp().download_file(audioURL, audioFile);
+				if os.path.exists(audioFile):
+					with open(audioFile, 'rb') as f:
+						audio = f.read()
+						self.__audioZip.addFile(fileName, audio)
+					return True, audioFile
 
 		except Exception as err:
-			# print(CURR_FILENAME + ": Fail to query audio of " + word)
-			audio = str(err)
-			# print(str(err))
-			return False, audio
+			return False, str(err)
 
-		return True, audio
+		return False, "Unknown Error!"
 
 	def del_audio(self, word):
 
-		audioFile = self.__audioPath + word + ".mp3"
-		if os.path.isfile(audioFile): os.remove(audioFile)
-		return not os.path.exists(audioFile)
+		fileName = word[0] + "/" + word + ".mp3"
+		return self.__dictZip.delFile(fileName)
