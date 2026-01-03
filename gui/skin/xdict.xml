@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<mainframe app_min_size_x="701" app_min_size_y="551" init_wnd_x="100" init_wnd_y="100" x="100" y="100" width="701" height="551" item_command_id="1" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" image_rgn4="" wnd_caption="金山词霸">
+	<panel name="inner rect" x="0" y="0" width="701" height="551" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" filltype="0" fillvalue="255">
+		<panel name="顶部" x="0" y="0" width="701" height="95" item_command_id="31000" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="1" color_scheme="1" filltype="0" fillvalue="255">
+			<panel name="left" x="0" y="0" width="6" height="95" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\top_left.bmp"/>
+			<panel name="mid" x="6" y="0" width="689" height="95" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\top_middle.bmp"/>
+			<panel name="right" x="695" y="0" width="6" height="95" item_command_id="0" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\top_right.bmp"/>
+			<panel name="词霸title" x="10" y="8" width="86" height="14" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="0" filltype="2" fillvalue="skin\xdict\XDictSkin\logo.bmp"/>
+			<string_item name="版本号" x="100" y="8" width="80" height="14" item_command_id="40002" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="0" text="v1.1" txt_h_align="0" txt_cr_normal="16777215" txt_cr_hover="16777215" txt_cr_click="16777215" font_name="Arial" font_size="90" font_style="0"/>
+			<win32_ctrl x="560" y="1" width="31" height="21" item_command_id="31007" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="31007" filltype="0" fillvalue="">
+                 <button_3image tooltip="菜单" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\menu_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+            </win32_ctrl>
+			<win32_ctrl x="591" y="1" width="33" height="21" item_command_id="31001" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="31001" filltype="0" fillvalue="">
+                 <button_3image tooltip="最小化" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\minimize_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+            </win32_ctrl>
+			<win32_ctrl x="624" y="1" width="33" height="21" item_command_id="31002" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="31002" filltype="0" fillvalue="">
+                 <button_3image tooltip="最大化" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\maxmize_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+            </win32_ctrl>
+			<win32_ctrl x="624" y="1" width="33" height="21" item_command_id="31003" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="31003" filltype="0" fillvalue="" show="0">
+                 <button_3image tooltip="恢复" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\restore_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+            </win32_ctrl>
+			<win32_ctrl x="657" y="1" width="43" height="21" item_command_id="31004" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="31004" filltype="0" fillvalue="">
+                 <button_3image tooltip="关闭" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\close_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+            </win32_ctrl>
+		    <panel name="dict tag" x="28" y="39" width="497" height="56" item_command_id="38000" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" filltype="0" fillvalue="255"> 
+                <win32_ctrl x="0" y="0" width="95" height="40" item_command_id="34101" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_autoradio" ctrl_id="34101" filltype="0"  group_from="34101" group_to="34103">
+	                 <button_3image tooltip="词典查词" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\dictionary_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+                </win32_ctrl>
+				<panel name="current1" x="18" y="42" width="22" height="14" item_command_id="380001" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\arrow.bmp"/>
+                <win32_ctrl x="130" y="0" width="95" height="40" item_command_id="34102" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_autoradio" ctrl_id="34102" filltype="0"  group_from="34101" group_to="34103">
+                     <button_3image tooltip="在线翻译" color_scheme="1" text="" three_state_bk="skin\xdict\XDictSkin\translation_btn.bmp" border="0" color_lt="0" color_rb="0" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+                </win32_ctrl>
+				<panel name="current2" x="150" y="42" width="22" height="14" item_command_id="380002" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\arrow.bmp"/>
+               <win32_ctrl x="260" y="0" width="95" height="40"  item_command_id="34103" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_autoradio" ctrl_id="34103" filltype="0"  group_from="34101" group_to="34103">
+                     <button_3image tooltip="写作句库" color_scheme="1" text="" three_state_bk="skin\xdict\XDictSkin\sentence_btn.bmp" border="0" color_lt="0" color_rb="0" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+                </win32_ctrl>
+				<panel name="current3" x="280" y="42" width="22" height="14" item_command_id="380003" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\arrow.bmp"/>
+	        </panel>
+			<win32_ctrl name="生词本" x="619" y="66" width="75" height="22"  item_command_id="34104" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="34104" filltype="0"  group_from="34101" group_to="34104">
+			<button_3image tooltip="生词本" color_scheme="1" text="" three_state_bk="skin\xdict\XDictSkin\newword_btn.bmp" border="0" color_lt="0" color_rb="0" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+			</win32_ctrl>
+ 			<win32_ctrl name="背单词" x="545" y="66" width="75" height="22"  item_command_id="34511" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="34511" filltype="0"  group_from="34511" group_to="34511">
+			<button_3image tooltip="背单词" color_scheme="1" text="" three_state_bk="skin\xdict\XDictSkin\beidanci.bmp" border="0" color_lt="0" color_rb="0" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+			</win32_ctrl>
+        </panel>
+		<panel name="词典和句库核心区" x="0" y="95" width="701" height="421" item_command_id="34000" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" filltype="1" fillvalue="255">
+			<panel name="核心区输入边线上" x="0" y="0" width="1" height="58" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="1" fillvalue="9934743"/>
+			<panel name="核心区输入背景中" x="1" y="0" width="699" height="58" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\search_bg_middle.bmp"/>
+			<panel name="核心区输入边线右" x="700" y="0" width="1" height="58" item_command_id="0" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="1" fillvalue="9934743"/>
+			<panel name="corner" x="0" y="0" width="6" height="5" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\trans_left_corner.bmp"/>
+			<panel name="corner" x="695" y="0" width="6" height="5" item_command_id="0" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\trans_right_corner.bmp"/>
+			<panel name="输入区" x="0" y="11" width="701" height="37" item_command_id="32000" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="1" color_scheme="1" filltype="0" fillvalue="255">
+					<panel name="输入区内框" x="0" y="0" width="490" height="37" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="1" color_scheme="1" filltype="0" fillvalue="255">
+					     <win32_ctrl x="10" y="0" width="45" height="37" item_command_id="32001" btn_type="1" btn_pic="skin\xdict\XDictSkin\prev_btn.bmp" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="0" ctrl_name="uis_fourtypebutton" ctrl_id="32001" tooltip_text="查词向前历史"/>
+					     <win32_ctrl x="55" y="0" width="40" height="37" item_command_id="32002" btn_type="1" btn_pic="skin\xdict\XDictSkin\next_btn.bmp" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="0" ctrl_name="uis_fourtypebutton" ctrl_id="32002" tooltip_text="查词向后历史"/>
+						 <panel name="" x="95" y="0" width="486" height="37" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\combox_bk.bmp">
+							<win32_ctrl x="2" y="9" width="434" height="26" item_command_id="33101"  position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="1" color_scheme="1" ctrl_name="drop_inputedit" ctrl_id="33101" border="0" color_lt="4143167" color_rb="13619665" style="128" es_readonly="0" font_name="Arial" font_size="125" font_style="400" text_color="0" bg_img="" focus_text='请输入词，“回车”查询' tooltip="" limit_num="256" disable="0" disUpDown="1"/>
+							<win32_ctrl x="436" y="1" width="30" height="34" item_command_id="320031" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="320031" filltype="0" fillvalue="" show="0">
+								<button_3image tooltip="清空" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\delete_item.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+							</win32_ctrl>
+							<win32_ctrl x="466" y="1" width="20" height="34" item_command_id="320032" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="320032" filltype="0" fillvalue="">
+								<button_3image tooltip="下拉" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\combobox_drop_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+							</win32_ctrl>
+						 </panel>
+					</panel>
+				<win32_ctrl x="581" y="0" width="110" height="37" item_command_id="32004" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="32004" filltype="0" fillvalue="">
+					<button_3image tooltip="Enter 查询词霸" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\lookup_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+				</win32_ctrl>
+			</panel>
+            <win32_ctrl name="下拉索引" x="95" y="50" width="486" height="200" item_command_id="33000" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_ciba_list_wnd" ctrl_id="33000" style="304087137" filltype="0" mouse_over_bk_color="0" border="0" border_width="0" border_color="255" show="0"/>		
+			<panel name="输出区" x="0" y="58" width="701" height="363" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" filltype="0" fillvalue="255">
+			    <panel name="核心区左边线" x="0" y="0" width="1" height="363" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="0" color_scheme="1" filltype="1" fillvalue="9934743"/>
+			    <panel name="核心区右边线" x="700" y="0" width="1" height="363" item_command_id="0" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="0" color_scheme="1" filltype="1" fillvalue="9934743"/>
+				<panel name="首页" x="1" y="0" width="699" height="363" item_command_id="34601" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" filltype="1" fillvalue="16514043" show="1">
+					<win32_ctrl name="首页上部分" x="0" y="0" width="699" height="363" item_command_id="34602" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="1" color_scheme="1" ctrl_name="explain_view" view_type="3" ctrl_id="34602" show="1"/>
+				</panel>
+				<panel name="词典" x="1" y="0" width="699" height="363" item_command_id="34200" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" filltype="1" fillvalue="16777215" show="0">
+                     <win32_ctrl name="本地结果view" x="0" y="0" width="699" height="363" item_command_id="34201" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" ctrl_name="explain_view" view_type="0" ctrl_id="34201" show="0"/>
+					 <win32_ctrl name="结果view" x="0" y="0" width="699" height="363" item_command_id="34202" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" ctrl_name="explain_view" view_type="0" ctrl_id="34202" show="0"/>
+				</panel>
+				<panel name="句典" x="1" y="0" width="699" height="363" item_command_id="34300" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" filltype="0" fillvalue="255" show="0">
+					<win32_ctrl name="结果view" x="0" y="0" width="699" height="363" item_command_id="34301" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" ctrl_name="explain_view" view_type="2" ctrl_id="34301"/>
+				</panel>
+			</panel>
+		</panel>
+        <panel name="翻译区" x="0" y="95" width="701" height="421" item_command_id="34001" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" filltype="1" fillvalue="15329769" show="0">
+			       <panel name="left_line" x="0" y="0" width="1" height="421" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="0" color_scheme="1" filltype="1" fillvalue="9934743"/>
+			       <panel name="mid" x="1" y="0" width="699" height="209" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\top_mid_bk.bmp"/>
+				   <panel name="right_line" x="700" y="0" width="1" height="421" item_command_id="0" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="0" color_scheme="1" filltype="1" fillvalue="9934743"/>
+				   <panel name="corner" x="0" y="0" width="6" height="5" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\trans_left_corner.bmp"/>
+			       <panel name="corner" x="695" y="0" width="6" height="5" item_command_id="0" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\trans_right_corner.bmp"/>
+					<panel name="翻译输入" x="1" y="0" width="699" height="175" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="2" color_scheme="1" filltype="0" fillvalue="16777215">
+						<panel name="" x="11" y="9" width="677" height="165" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" filltype="1" fillvalue="12171705"/>
+						<panel name=""  x="12" y="10" width="675" height="163" item_command_id="0" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" filltype="1" fillvalue="16777215">
+							<win32_ctrl x="1" y="1" width="673" height="161" item_command_id="34501" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" font_name="Arial" font_size="110" ctrl_name="explain_autoscroll_edit" ctrl_id="34501" border="0" color_lt="4143167" color_rb="13619665" style="2101252" es_readonly="0" limit_text_num="4000" bk_color="16777215"/>
+						</panel>
+					  <panel name="" x="12" y="174" width="675" height="1" item_command_id="0" position_x_mode="1" position_y_mode="0" resize_x_mode="0" resize_y_mode="1" color_scheme="1" filltype="1" fillvalue="16777215"/>
+                </panel>
+				<panel name="翻译中部控件" x="1" y="176" width="699" height="33" item_command_id="0" position_x_mode="1" position_y_mode="2" resize_x_mode="0" resize_y_mode="1" color_scheme="1" filltype="0" fillvalue="255">
+				    <win32_ctrl x="12" y="5" width="102" height="200" item_command_id="34503" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" font_name="Arial" font_size="90" ctrl_name="combobox_dict_list" ctrl_id="34503" three_state_bk="skin\xdict\XDictSkin\combobox_drop_btn_translate.bmp" border="1" color_lt="13487565" color_rb="13487565" style="3" edit_font_name="Arial" edit_font_size="90" edit_offset="0" edit_height="16" list_border_color="9934743"/>
+				    <win32_ctrl x="471" y="2" width="57" height="28" item_command_id="34504" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="34504" filltype="0" fillvalue="">
+					    <button_3image tooltip="翻译" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\translate_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+					 </win32_ctrl>
+					 <win32_ctrl x="528" y="2" width="23" height="28" item_command_id="34510" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="34510" filltype="0" fillvalue="">
+					    <button_3image tooltip="翻译快捷键选择菜单" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\translate_menu_enter.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+					 </win32_ctrl>
+					 <win32_ctrl x="573" y="12" width="47" height="12" item_command_id="34507" position_x_mode="0" position_y_mode="0" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="34507" filltype="0" fillvalue="">
+              <button_3image tooltip="复制" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\copy_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+                    </win32_ctrl>
+					<win32_ctrl x="573" y="12" width="47" height="12" item_command_id="34509" position_x_mode="0" position_y_mode="0" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="34509" filltype="0" fillvalue="" show="0">
+              <button_3image tooltip="复制成功" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\copy_succ.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+                    </win32_ctrl>
+					<win32_ctrl x="640" y="12" width="47" height="12" item_command_id="34505" position_x_mode="0" position_y_mode="0" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="34505" filltype="0" fillvalue="">
+                           <button_3image tooltip="清空" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\empty_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+                      </win32_ctrl>
+				</panel>
+			<panel name="down_line" x="1" y="209" width="699" height="1" item_command_id="0" position_x_mode="1" position_y_mode="2" resize_x_mode="0" resize_y_mode="1" color_scheme="1" filltype="1" fillvalue="13224393"/>
+			<panel name="翻译输出" x="1" y="210" width="699" height="175" item_command_id="0" position_x_mode="1" position_y_mode="2" resize_x_mode="0" resize_y_mode="-1" color_scheme="1" filltype="1" fillvalue="16514043">
+            <win32_ctrl x="12" y="11" width="674" height="163" item_command_id="34502" position_x_mode="1" position_y_mode="1" resize_x_mode="0" resize_y_mode="0" color_scheme="1" font_name="Arial" font_size="110" ctrl_name="explain_autoscroll_edit" ctrl_id="34502" border="0" color_lt="4143167" color_rb="13619665" style="2101252" es_readonly="0" limit_text_num="-1" bk_color="16514043"/>
+          </panel>
+          <panel name="翻译底部" x="1" y="385" width="699" height="36" item_command_id="0" position_x_mode="1" position_y_mode="0" resize_x_mode="0" resize_y_mode="1" color_scheme="1" filltype="1" fillvalue="16514043">
+		   <win32_ctrl x="12" y="15" width="121" height="12" item_command_id="34506" position_x_mode="1" position_y_mode="0" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="34506" filltype="0" fillvalue="">
+              <button_3image tooltip="查看相似例句" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\similar_sentence_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+			  </win32_ctrl>
+			<string_item name="" x="530" y="12" width="60" height="14" item_command_id="0" position_x_mode="0" position_y_mode="0" resize_x_mode="1" resize_y_mode="1" color_scheme="1" text="以上结果由" txt_h_align="1" txt_cr_normal="10066329" txt_cr_hover="10066329" txt_cr_click="10066329" font_name="MS Shell Dlg" font_size="70" font_style="400"/>
+			<win32_ctrl x="592" y="2" width="70" height="23" item_command_id="34508" position_x_mode="0" position_y_mode="0" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="34508" filltype="0" fillvalue="">
+              <button_3image tooltip="" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\baidu.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+            </win32_ctrl>
+			<string_item name="" x="664" y="12" width="25" height="14" item_command_id="0" position_x_mode="0" position_y_mode="0" resize_x_mode="1" resize_y_mode="1" color_scheme="1" text="提供" txt_h_align="1" txt_cr_normal="10066329" txt_cr_hover="10066329" txt_cr_click="10066329" font_name="MS Shell Dlg" font_size="70" font_style="400"/>
+          </panel>		  
+        </panel>		
+		<panel name="底部区" x="0" y="516" width="701" height="35" item_command_id="35000" position_x_mode="1" position_y_mode="0" resize_x_mode="0" resize_y_mode="1" color_scheme="1" filltype="0" fillvalue="255">
+			<panel name="left" x="0" y="0" width="3" height="35" item_command_id="0" position_x_mode="1" position_y_mode="0" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\foot_left.bmp"/>
+			<panel name="mid" x="3" y="0" width="695" height="35" item_command_id="0" position_x_mode="1" position_y_mode="0" resize_x_mode="0" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\foot_middle.bmp"/>
+			<panel name="right" x="698" y="0" width="3" height="35" item_command_id="0" position_x_mode="0" position_y_mode="0" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\foot_right.bmp"/>
+            <win32_ctrl name="新鲜事" x="13" y="3" width="200" height="30" item_command_id="0" position_x_mode="1" position_y_mode="0" resize_x_mode="1" resize_y_mode="1" color_scheme="0" ctrl_name="uis_button" ctrl_id="35009" filltype="0" fillvalue="255" show="0">
+				<button_hyperlink text="" tooltip="" hyperlink="#" image="" txt_h_align="0" txt_cr_normal="13924123" txt_cr_hover="13924123" txt_cr_click="13924123"/>
+			</win32_ctrl>
+			<string_item name="下载进度" x="13" y="3" width="300" height="30" item_command_id="35004" position_x_mode="1" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="0" text="正在更新词典数据 %0" txt_h_align="0" txt_cr_normal="13924123" txt_cr_hover="13924123" txt_cr_click="13924123" font_name="Arial" font_size="90" font_style="400" show="0"/>
+			<win32_ctrl x="452" y="6" width="89" height="25" item_command_id="31006" position_x_mode="0" position_y_mode="0" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="31006" filltype="0" fillvalue="">
+                 <button_3image tooltip="悬浮查词窗，双击alt呼出" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\mini_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+            </win32_ctrl>
+			<win32_ctrl x="548" y="6" width="64" height="25" item_command_id="35005" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="35005" filltype="0" fillvalue="" show="0">
+        <button_3image tooltip="开启取词" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\grab_enable_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+			</win32_ctrl>
+			<win32_ctrl x="548" y="6" width="64" height="25" item_command_id="35006" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="35006" filltype="0" fillvalue="" show="0">
+        <button_3image tooltip="关闭取词" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\grab_disable_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+			</win32_ctrl>
+			<win32_ctrl x="619" y="6" width="64" height="25" item_command_id="35007" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="35007" filltype="0" fillvalue="" show="0">
+        <button_3image tooltip="开启划译" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\select_enable_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+			</win32_ctrl>
+			<win32_ctrl x="619" y="6" width="64" height="25" item_command_id="35008" position_x_mode="0" position_y_mode="1" resize_x_mode="1" resize_y_mode="1" color_scheme="1" ctrl_name="uis_button" ctrl_id="35008" filltype="0" fillvalue="" show="0">
+        <button_3image tooltip="关闭划译" color_scheme="1" three_state_bk="skin\xdict\XDictSkin\select_disable_btn.bmp" border="0" color_lt="0" color_rb="0" text="" txt_h_align="1" txt_cr_normal="0" txt_cr_hover="0" txt_cr_click="0"/>
+			</win32_ctrl>
+			<panel name="右下角" x="688" y="22" width="9" height="9" item_command_id="0" position_x_mode="0" position_y_mode="0" resize_x_mode="1" resize_y_mode="1" color_scheme="1" filltype="2" fillvalue="skin\xdict\XDictSkin\foot_icon.bmp"/>
+		</panel>
+	</panel> 
+</mainframe>

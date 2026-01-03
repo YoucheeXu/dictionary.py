@@ -1,0 +1,159 @@
+﻿To-Do:
+* use json as configuration file
+* warning of not found, including sound and reason in page
+* double click to query
+* dynamic tab
+	* read cfg to create tab
+	* add x to tab to remove the tab
+	* add + to add tab and associate with new dict
+* support and edit word online in SDictBase
+* add "webDefinitions" of GDictBase
+* support to read *.mdd, *.mdx
+* zipArchive list split to path and name
+* word dict
+	* orgin word (margins -> margin)
+	* read/mark function
+* multiThread
+	* interupt any time in searching word
+* black list
+* menu
+* up and down key to choice list word
+* miniable
+* function of other buttons
+	* four state button
+	* previous button
+	* next button
+* display or hide cmd window on command
+* delete file to recycle bin
+* distinguish letter and capital in dict
+* support phase
+
+
+v1.0.0.7
+
+Function Added:
+* spearate mp3 in multi folder						OK
+* support multi pronouncation in html				OK		
+* pronounce word even it's not in html				OK
+* support ini file to read configuration			OK
+* read and write mp3 in compressed file				cancel
+* read and write json in compressed file			OK
+* support datum instead of file						OK
+	support google_search							OK
+	support mp3Play									cancel
+	support similiar word							OK
+* record name of wrong json or mp3 and del it		OK
+
+Known Bugs:
+* when disable title, can't input word in Ubuntu 18.04, see https://exceptionshub.com/tkinters-overideredirect-prevents-certain-events-in-mac-and-linux.html
+* movable don't work well
+* illegal close may cause zip error
+* icon in taskbar
+* del word command can't del word in word's dict
+* miss largest by large
+* characterize doesn't pronounce
+* soem like "\x27" doesn't display well in html
+
+Bugs Fixed:
+* fail to download mp3								OK
+* after querying word focus on word input box		OK
+* not found shouldn't be judged by programe			OK
+* wrong to remove valid json file					OK
+
+
+v1.0.0.6
+
+Known Bugs:
+* when disable title, can't input word in Ubuntu 18.04, see https://exceptionshub.com/tkinters-overideredirect-prevents-certain-events-in-mac-and-linux.html
+* movable don't work well
+* sometimes it display duplicated word in word list panel including paste word in input box
+* fail to download mp3
+* double click word list doesn't query word
+* characterize doesn't pronounce
+* delete file to recycle bin
+* "not found" definition doesn't work
+* after querying word focus on word input box
+* icon in taskbar
+* delete word command can't delete word in word.dict
+* not found shouldn't be judged by programe
+* pronounce at checking function should leave it to js
+* remove valid json file
+
+Bugs fixed:
+* some word display very slow : from, big, optimistic, crime, course	ok
+* single voice file is not be download   ok
+* when word is not found, don't display "mark it as new word" symbol	ok
+* some real words show "Not found" : 	ok
+* when double click the list column, sometime it will show "404" page in web browse		ok
+* symbol can't save correctly in json file.			almost OK
+* proxy dosen't work in download_file fun of dictApp		ok
+
+Add function:
+* work on Ubuntu 18.04					ok
+* replace with jPlayer to play mp3		ok
+* delete word online					ok
+* delete audio file alone				ok
+
+
+1.0.0.5
+Fix bugs:
+* the meaning of "thin" doesn't show correctly	OK
+* display not found page when word is not in database	OK
+* remove warning box    OK
+* when press enter button and the word isn't found, it pronounce the next word which is typed     OK
+* if mp3 url isn't correct, skip it to display: bet, bar, basketball, borrow, building,  OK
+* "Not found!" problem: Atlantic,		OK
+* wait cursor in edit control			OK
+
+Add function:
+* change the first page				OK
+* export new word to a text	file	OK   
+* save the pron mp3 file            OK
+* check illegal letter             OK
+* display explains in several rows   OK
+* if it can't find voice file , pronounce it  by TTS     OK
+* first download xml file, then analyse it  OK
+* replace phase such as <美>, with right expression OK
+* skip wrong xml analysis, to display "Not found!", and record in "wrong.txt"    cancel
+* after display word's explain, select it in edit box 	OK
+
+Wrong word analyse
+<([^a-z>]+)>       &lt;$1&gt;                           OK
+
+http://dict-co.iciba.com/api/dictionary.php?w=
+
+http://dict.qq.com/dict?q=word
+
+在.NET使用JSON作为数据交换格式
+http://blog.csdn.net/zhoufoxcn/article/details/6254657
+
+json入门基础教程
+http://www.cnblogs.com/mzoylee/archive/2009/07/20/1526966.html
+
+JS 解析 JSON 及 XML
+http://www.cnblogs.com/lucas/archive/2009/04/13/1434566.html
+
+replace
+&#230;	æ
+&#596;	ɔ
+&#601;	ə
+&#643;	ʃ
+&#652;	ʌ
+
+every now and then
+
+可以实现，但是比较麻烦
+1、用https://github.com/grumdrig/node-sqlite的驱动来访问sqlite数据库
+2、用node.js来写一个http服务器,在8000端口上监听请求，如：http://localhost:8000/getusers
+返回[{”name”:”www”,”age”:25}]
+3、用ajax去请求上面的地址
+
+sql.js - JavaScript的SQLite数据库
+SQLite的JavaScript 移植版本，使用 Emscripten 对 SQLite 的 C 代码进行编译。
+
+示例代码：
+
+var db = SQL.open();
+var data = db.exec(command);
+
+https://github.com/kripken/sql.js

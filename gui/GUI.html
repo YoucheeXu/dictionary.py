@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns = "http://www.w3.org/1999/xhtml">
+    <head>
+        <title>GUI_6</title>
+        <meta http-equiv = "Content-Type" content = "text/html; charset = utf-8"/>
+        <link href = "./skin/bootstrap-combined.min.css" rel = "stylesheet">
+        <link rel = "stylesheet" type = "text/css" href = "./skin/gui.css"/>
+        <link rel = "stylesheet" href = "./skin/main.css" type = "text/css"  media = "all"/>
+        <script type = "text/javascript" src = "./js/jquery-1.11.1.min.js"></script>
+        <script type = "text/javascript" src = "./js/process.js"></script>
+        <script>
+			// getChange();
+			dict4 = null;
+			// window.external.log("title");
+			// window.alert("title");
+			function getJson(root){
+				dict4 = root;
+				// document.write("<word>"+dict["query"]+"</word>");
+				// document.write(getVoice(primary));
+			}
+		</script>
+    </head>
+    <body scroll = "no" topmargin = "0" leftmargin = "0">
+        <div class = "top_panel" >
+            <button type = "button" id = "btn_menu" style = "border:none;"></button>
+            <button type = "button" id = "btn_min" style = "border:none;"></button>
+            <button type = "button" id = "btn_max" style = "border:none;"></button>
+            <button type = "button" id = "btn_restore" style = "border:none;display:none;"></button>
+            <button type = "button" id = "btn_close" style = "border:none;"></button>
+        </div>
+        <div class = "input_panel">
+            <button type = "button" id = "btn_prev" style = "border:none;"></button>
+            <button type = "button" id = "btn_next" style = "border:none;"></button>
+            <div class = "input_box"; style = "width:490px; height:37px; background:url(./skin/combox_bk.bmp)">
+                <input type = "text" id = "word_input" style = "width:453px; height:27px; border:0px; background-color:transparent;"/>
+                <button type = "button" id = "btn_del" style = "border:none;"></button>
+                <button type = "button" id = "btn_drop" style = "border:none;"></button>
+            </div>
+            <button type = "button" id = "btn_lookup" style = "border:none;"></button>
+        </div>
+        <div id = "queryword" style = "display: none">such</div>
+        <div class = "main_panel">
+			<!--div class = "" id = "words_list_box"
+				style = "overflow:auto; height:430px; width:201px; "-->
+			<select id = "words_list" size = "25" name = "decision2"
+				style = "border:none; width:201px; display:none; float:left;">
+				<!-- <option selected>word 1</option> -->
+				<!-- <option>word 2</option> -->
+				<!-- <option>word 3</option> -->
+				<!-- <option>word 4</option> -->
+				<!-- <option>word 5</option> -->
+			</select>
+			<!--/div-->
+			<div class = "" id = "contents_box" style = "overflow-y:auto; height:430px; width:701px; float:left;">
+				<div class = "Word">
+				</div>
+				<div class = "tabbable">
+					<ul class = "nav nav-tabs">
+						<li class = "active"><a href = "#panel1" id = "google" data-toggle = "tab">谷歌词典</a></li>
+						<li><a href = "#panel2" id = "collocation" data-toggle = "tab">Collocation</a></li>
+						<li><a href = "#panel3" id = "wordnet" data-toggle = "tab">Wordnet</a></li>
+						<li><a href = "#panel4" id = "googleenglish" data-toggle = "tab" >Google English</a></li>
+					</ul>
+					<div class = "tab-content">
+						<div id = "panel1" class = "tab-pane active">
+							<!--div id = "first" style = "display: none">true</div-->
+							<!-- <first style = "display: none">true</first> -->
+							<div id = "toggle_example" align = "right">- Hide Examples</div>
+							<p>
+							</p>
+						</div>
+						<div id = "panel2" class = "tab-pane">
+							<!-- <first style = "display: none">true</first> -->
+							<p> and so on ...</p>
+						</div>
+						<div id = "panel3" class = "tab-pane">
+							<!-- <first style = "display: none">true</first> -->
+							<p></p>
+						</div>
+						<div id = "panel4" class = "tab-pane">
+							<!-- <first style = "display: none">true</first> -->
+							<h4>to come soon</h4>
+							<p></p>
+						</div>
+					</div><!-- /.tab-content -->
+				</div><!-- /.tabbable -->
+			</div><!-- /.contents_box -->
+        </div>
+		<div class = "bottom_panel">
+        </div>
+    </body>
+    <script>
+        (function (a){
+            a(function () {
+               var b = a(".top");
+                a(b).hide();
+                a(window).scroll(function () {
+                    if (a(window).scrollTop() == "0") {
+                        a(b).fadeOut("slow")
+                    } else {
+                        a(b).fadeIn("slow")
+                    }
+                });
+                a(b).click(function () {
+                    a("html,body").animate({
+                        scrollTop: 0
+                    }, 600);
+                    return false
+                })
+            })
+        })(jQuery)
+    </script>
+    <script type = "text/javascript" src = "./js/bootstrap-tab.js"></script>
+    <script type = "text/javascript" src = "./js/gui.js"></script>
+    <script type = "text/javascript" src = "./js/ajax.js"></script>
+    <script type = "text/javascript" src = "./js/toggle.js"></script>
+	<!-- <link href="./js/jplayer.blue.monday.min.css" rel="stylesheet" type="text/css"> -->
+	<!-- <link href="./js/jplayer.blue.monday.css" rel="stylesheet" type="text/css"> -->	
+	<link href="./js/player.css" rel="stylesheet" type="text/css">
+	<!-- <script type="text/javascript" src="./js/jquery.jplayer.min.js"></script> -->
+	<!-- <script type="text/javascript" src="./js/jquery.jplayer.js"></script> -->
+	<script type="text/javascript" src="./js/player.js"></script>
+	<script type="text/javascript" src="./js/jquery-git.js"></script>
+	<link href="./js/stars.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="./js/stars.js"></script>
+    <div class = "top">
+        <a onclick = "window.scrollTo(0,0);" alt = "Top" href = "#top" title = "TOP" style = "color:#CC0000;">TOP</a>
+    </div>
+</html>

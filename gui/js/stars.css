@@ -1,0 +1,15 @@
+
+.stars{
+	white-space: nowrap;
+	text-align: right;
+	margin-right: 10px;
+	margin-top: 10px;
+	margin-bottom: 0px;
+	float: right;
+}
+
+.stars li{
+	display: inline-block;
+	color: #ADADAD;
+	font-size: 20px;
+}

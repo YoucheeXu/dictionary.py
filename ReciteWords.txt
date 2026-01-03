@@ -1,0 +1,24 @@
+﻿v1.0.0.7
+To-Do:
+* select words difficult level
+* reset to zero
+* multiuser
+* add console
+* add wrong hint in voice
+* "new" label when word first pop
+* mp3 play in zip file
+
+
+v1.0.0.6
+Known Bugs:
+* out of index hapeen when last one was chopped
+
+Bugs Fixed:
+* do "next" in the "study mode" of the last word, it'll be wrong		ok
+
+Fun Added:
+* log function			ok
+* quit warring			ok
+* save progress before quiting in mid(Bug: wrong add 1 to words which was recited)	OK
+* add count function				ok
+* mp3 play by mp3play in windows 10 and by mplayer in Ubuntu 18.04		OK
