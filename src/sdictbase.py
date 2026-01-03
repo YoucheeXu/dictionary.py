@@ -22,7 +22,7 @@ class SDictBase(DictBase):
 		self.__dictBase = SQLite()
 		self.__dictBase.Open(dictSrc)
 
-	def __del__(self):
+	def close(self):
 		self.__dictBase.Close()
 
 	def get_parseFun(self):
@@ -47,3 +47,4 @@ class SDictBase(DictBase):
 	def del_word(self, word):
 		raise NotImplementedError("don't support to delete " + word)
 		return False
+	

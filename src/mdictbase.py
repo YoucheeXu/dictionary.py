@@ -83,6 +83,9 @@ class MDictBase(DictBase):
 		self.__WordList = self.__WordDict.keys()
 		# print(self.__WordList)
 
+	def close(self):
+		pass
+
 	def __ReadHead(self):
 		# global gLogger
 

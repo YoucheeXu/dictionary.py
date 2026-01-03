@@ -1,12 +1,12 @@
 {
 	"common": {
-		"ver": "1.0.0.9"
+		"ver": "1.0.1.0"
 	},
 
 	"GUI": {
 		"Skin": "Skin/",
 		"html": "gui/GUI.html",
-		"Height": 551,
+		"Height": 548,
 		"Width": 701,
 		"BackColor": "67,160,255"
 	},
@@ -78,6 +78,6 @@
 
 	"Debug": {
 		"bEnable": true,
-		"file": "log/Dictionary.log"
+		"file": "logs/Dictionary.log"
 	}
 }

@@ -106,16 +106,15 @@ function query_word(word){
 	// log("info", "query_word: " + word, false)
 
 	try {
-		if(window.external) window.external.QueryWord(word);
+		if(window.external) window.external.query_word(word);
 		$('#word_input').focus();
 		$('#word_input').select();
 		return true;
     }
     catch(error){
-        // google_search();
 		log("error", error, true);
     }
-    // $("#google").tab('show');
+
 	return false;
 }
 
@@ -137,12 +136,12 @@ $(":button").click(function(){
     else if(id == "btn_del") {
         clear_input();
     }
-    // else if (window.external) window.external.OnButtonClicked(id);
+    else if (window.external) window.external.OnButtonClicked(id);
 });
 
 $(".top_panel").mousedown(function(event){
 	// alert(".top_panel" + event.clientX);
-	if(window.external) window.external.startMove(event.screenX, event.screenY);
+	if(window.external) window.external.start_move(event.screenX, event.screenY);
 });
 
 $(".top_panel").mousemove(function(event){
@@ -152,12 +151,12 @@ $(".top_panel").mousemove(function(event){
 
 $(".top_panel").mouseup(function(event){
 	// alert(".top_panel" + event.clientX);
-	if(window.external) window.external.stopMove(event.screenX, event.screenY);
+	if(window.external) window.external.stop_move(event.screenX, event.screenY);
 });
 
 $(".top_panel").mouseleave(function(event){
 	// alert(".top_panel" + event.clientX);
-	if(window.external) window.external.stopMove(event.screenX, event.screenY);
+	if(window.external) window.external.stop_move(event.screenX, event.screenY);
 });
 
 function bindSwitchTab(){
@@ -177,7 +176,7 @@ function bindSwitchTab(){
 			log("info", "tabNum: " + tabNum, false);
 			var n = parseInt(tabNum);
 			if(window.external){
-				window.external.SwitchTab(n);
+				window.external.switch_tab(n);
 			}
 			query_word();
 		}

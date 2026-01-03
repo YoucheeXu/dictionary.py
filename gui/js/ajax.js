@@ -53,15 +53,19 @@ function dictJson(word, tabId, dict, audio){
 
 function dictHtml(word, tabId, dict, audio){
 
+
 	if ($('#panel1 first').html() == "false") {
 		return;
 	}
+	// log("info", word, false);
+	// log("info", tabId, false);
 	try {
 		var display = dict;
 		$('#' + tabId + ' p').html(display);
 		$(".Word").html(load_word(word, audio));
 		load_starts(2);
 		loadPlayer();
+		// log("info", "dictHtml OK", false);
 	}
 	catch(error){
 		log("error", error, true);

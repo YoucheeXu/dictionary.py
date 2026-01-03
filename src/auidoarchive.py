@@ -27,7 +27,7 @@ class AuidoArchive():
 
 		self.__audioZip = ZipArchive(audioSrc, compression, compresslevel)
 
-	def __del__(self):
+	def close(self):
 		if os.path.exists(self.__tempAudioDir):
 			shutil.rmtree(self.__tempAudioDir)
 		time.sleep(1)
@@ -43,12 +43,16 @@ class AuidoArchive():
 
 		try:		
 			if(self.__audioZip.bFileIn(fileName)):
-				audio = self.__audioZip.readFile(fileName)
-				if audio:
-					if os.path.exists(audioFile) == False:
+				if os.path.exists(audioFile) == True:
+					return True, audioFile
+				else:
+					audio = self.__audioZip.readFile(fileName)
+					if audio:
 						with open(audioFile, 'wb') as f:
 							f.write(audio)
-					return True, audioFile
+						return True, audioFile
+					else:
+						return False, "Fail to read audio of " + word + " in file!"
 			else:
 				audioURL = "https://ssl.gstatic.com/dictionary/static/sounds/oxford/" + word + "--_us_1.mp3"
 

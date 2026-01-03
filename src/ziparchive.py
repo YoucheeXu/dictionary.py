@@ -3,7 +3,8 @@
 # -*- coding: utf-8 -*-
 #coding=utf-8
 '''
-v1.0.1 given compression format
+v1.1	every time open zip and close	
+v1.0.1	given compression format
 '''
 import re
 from zipfile import *
@@ -23,27 +24,41 @@ class ZipArchive:
 		gLogger = GetLogger()
 
 		self.__zip = zip
+		self.__compression = compression
+		self.__compresslevel = compresslevel
+		'''
+		self.__options = {
+			'mode': 'a',
+			'compression': ZIP_DEFLATED,
+			'compresslevel': 2
+		}
+		'''
+		# self.__options = ('a', ZIP_DEFLATED, True, 2)
+
+		self.__fileList = []
+	
 		try:
-			self.__archiveFile = ZipFile(self.__zip, 'a', compression, compresslevel)
+			# self.__archiveFile = ZipFile(self.__zip, 'a', compression = ZIP_DEFLATED, compresslevel = 2);
+			# with ZipFile(self.__zip, self.__options) as zipf:
+			with ZipFile(self.__zip, 'a', ZIP_DEFLATED, compresslevel = 2) as zipf:
+				self.__fileList = zipf.namelist()
 		except (BadZipFile, LargeZipFile) as reason:
 			gLogger.error(rason)
 		except Exception as error:
 			gLogger.error(error)
 			# gLogger.error("Fail to open: %s." %self.__zip)
 
-		self.__fileList = self.__archiveFile.namelist()
 		# gLogger.info(self.__fileList)
-
-	def __del__(self):
-		print("kill myself.")
-		self.__archiveFile.close()
 
 	def addFile(self, fileName, datum):
 		# global gLogger
 
 		try:
 			# self.__archiveFile.write(filePath)
-			self.__archiveFile.writestr(fileName, datum)
+			# self.__archiveFile.writestr(fileName, datum)
+			# with ZipFile(self.__zip, self.__options) as zipf:
+			with ZipFile(self.__zip, 'a', ZIP_DEFLATED, compresslevel = 2) as zipf:	
+				zipf.writestr(fileName, datum)
 		except (BadZipFile, LargeZipFile) as reason:
 			gLogger.error(rason)
 			return False
@@ -61,14 +76,17 @@ class ZipArchive:
 		return False
 
 	def readFile(self, fileName):
-		# global gLogger
 
 		if(not self.bFileIn(fileName)):
 			return None
+		file = None
 		try:
-			file = self.__archiveFile.read(fileName)
+			# file = self.__archiveFile.read(fileName)
+			# with ZipFile(self.__zip, self.__options) as zipf:
+			with ZipFile(self.__zip, 'a', ZIP_DEFLATED, compresslevel = 2) as zipf:
+				file = zipf.read(fileName)
 		except (BadZipFile, LargeZipFile) as reason:
-			gLogger.error(rason)
+			gLogger.error(reason)
 			return None
 		except Exception as error:
 			gLogger.error(error)

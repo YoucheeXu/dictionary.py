@@ -28,7 +28,10 @@ class GDictBase(DictBase):
 
 		self.__dictZip = ZipArchive(dictSrc, compression, compresslevel)
 		self.__tempDir = tempfile.gettempdir()
-		GetApp().log("info", self.__tempDir)
+		gLogger.info("tempDir: " + self.__tempDir)
+
+	def close(self):
+		pass
 
 	def get_parseFun(self):
 		return "dictJson"
@@ -38,6 +41,7 @@ class GDictBase(DictBase):
 		# fileName = os.path.join(word[0], word + ".json")
 		fileName = word[0] + "/" + word + ".json"
 
+		wordFile = None
 		try:
 			if(self.__dictZip.bFileIn(fileName)):
 				dict = self.__dictZip.readFile(fileName)
@@ -58,10 +62,11 @@ class GDictBase(DictBase):
 						# addFile(self, fileName, datum)
 						if inWord == word:
 							# print("%s's json is OK!" %word)
-							GetApp().log("info", "%s's json is OK!" %word)
+							# GetApp().log("info", "%s's json is OK!" %word)
 							self.__dictZip.addFile(fileName, dict)
 						else:
 							datum = "Wrong word: " + inWord + ";"
+							# GetApp().log("error", "%s isn't what we want!" %word)
 							return False, datum
 					else:
 						datum = "No word in dictionary."
@@ -92,7 +97,8 @@ class GDictBase(DictBase):
 		except Exception as err:
 			# print("fail to query dict of " + word)
 			GetApp().log("error", "fail to query dict of " + word)
-			datum = str(err)
+			datum = str(err).replace("<", "")
+			datum = datum.replace(">", "")
 			if os.path.exists(wordFile):
 				os.remove(wordFile)
 			return False, datum

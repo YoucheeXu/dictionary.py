@@ -6,7 +6,7 @@ import abc
 
 from src.globalvar import GetLogger
 
-#################################################
+
 class DictBase(metaclass = abc.ABCMeta):
 
 	# def __init__(self, dictSrc):
@@ -26,4 +26,8 @@ class DictBase(metaclass = abc.ABCMeta):
 
 	@abc.abstractmethod
 	def del_word(self, word):
+		pass
+
+	@abc.abstractmethod
+	def close(self):
 		pass
