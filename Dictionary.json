@@ -1,0 +1,78 @@
+{
+	"common": {
+		"ver": "1.0.0.8"
+	},
+
+	"GUI": {
+		"Skin": "Skin/",
+		"html": "gui/GUI.html",
+		"Height": 551,
+		"Width": 701,
+		"BackColor": "67,160,255"
+	},
+
+	"Tab": [
+		{
+			"Name": "Google",
+			"Dict": "dict/Google.zip",
+			"Format": {
+				"Type": "ZIP",
+				"Compression": "ZIP_DEFLATED",
+				"Compress Level": 2
+			}
+		},
+		{
+			"Name": "15000",
+			"Dict": "dict/15000.dict",
+			"Format": {
+				"Type": "SQLite"
+			}
+		},
+		{
+			"Name": "Collins COBUILD",
+			"Dict": "dict/Collins COBUILD Advanced Learner's English-Chinese Dictionary.mdx",
+			"Format": {
+				"Type": "mdx"
+			}
+		}		
+	],
+
+	"Audio": [
+		{
+			"Name": "America",
+			"Audio": "audio/Google"
+		}
+	],
+
+	"Agent": {
+		"bAgent": false,
+		"nAgent": 1,
+		"Info": [
+			{
+				"IP": "http://127.0.0.1:8087",
+				"Name": "XX-Net",
+				"Program": "D:\\Green2\\XX-Net\\start.bat"
+			},
+			{
+				"IP": "http://10.0.4.206:8118",
+				"Name": "Abroad",
+				"Program": null
+			},
+			{
+				"IP": "http://10.0.4.225:3128",
+				"Name": "Factory",
+				"Program": null
+			}		
+		]
+	},
+
+	"Miss": { 
+		"miss_dict": "log/miss_dict.txt",
+		"miss_audio": "log/miss_audio.txt"
+	},
+
+	"Debug": {
+		"bEnable": true,
+		"file": "log/Dictionary.log"
+	}
+}

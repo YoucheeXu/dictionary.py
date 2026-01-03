@@ -1,47 +1,20 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# Example of embedding CEF Python browser using Tkinter toolkit.
-# This example has two widgets: a navigation bar and a browser.
-#
-# NOTE: This example often crashes on Mac (Python 2.7, Tk 8.5/8.6)
-#	   during initial app loading with such message:
-#	   "Segmentation fault: 11". Reported as Issue #309.
-#
-# Tested configurations:
-# - Tk 8.5 on Windows/Mac
-# - Tk 8.6 on Linux
-# - CEF Python v55.3+
-#
-# Known issue on Linux: When typing url, mouse must be over url
-# entry widget otherwise keyboard focus is lost (Issue #255
-# and Issue #284).
-
 # pip3 install cefpython3==66.0
-# pip3 uninstall cefpython3==56.1
-
-# ver: 1.0.0.7
+# pip3 uninstall cefpython3==66.0
 
 from cefpython3 import cefpython as cef
 
 import sys, os
-import logging as _logging
 import time
 import base64
 import threading
-import configparser
+import json
 
-# python3
 import urllib.request
 import urllib.error
 
-# import urllib3
-# from urllib3.exceptions import NewConnectionError, ConnectTimeoutError, MaxRetryError,HTTPError,RequestError,ReadTimeoutError,ResponseError
-
-# python2
-# import urllib2
-
-# python3
 from tkinter import filedialog
 import tkinter as tk
 import tkinter.messagebox as msgBox
@@ -57,52 +30,49 @@ try:
 except ImportError:
 	pass
 
-from GDictBase import *
-from globalVar import *
+from AuidoArchive import AuidoArchive
+from GDictBase import GDictBase
+from SDictBase import SDictBase
+from MDictBase import MDictBase
+from globalVars import *
+from utils import *
 
 # Fix for PyCharm hints warnings
 WindowUtils = cef.WindowUtils()
-
-# Globals
-gLogger = _logging.getLogger("Dictionary")
 
 # Constants
 # Tk 8.5 doesn't support png images
 IMAGE_EXT = ".png" if tk.TkVersion > 8.5 else ".gif"
 
+# global gLogger
+
 def main():
 
-	assert cef.__version__ >= "55.3", "CEF Python v55.3+ required to run this"
+	assert cef.__version__ >= "66.0", "CEF Python v66.0+ required to run this"
+
+	global gLogger
 
 	if IsWindows(): print("It's Windows!")
 	elif IsLinux(): print("It's Linux!")
 
 	curPath = os.getcwd()
-	cfgFile = os.path.join(curPath, "Dictionary.ini")
-	cfg = configparser.ConfigParser()  
-	cfg.read(cfgFile)
+	cfgFile = os.path.join(curPath, "Dictionary.json")
+	# print(cfgFile)
+	with open(cfgFile, 'rb') as f:
+		datum = f.read()
+	cfg = json.loads(datum, strict = False)
 
-	version = cfg.get("common", "ver")
+	version = cfg["common"]["ver"]
 
-	bDebug = cfg.getboolean("Debug", "bEnable")
-	logFile = cfg.get("Debug", "file")
+	bDebug = cfg["Debug"]["bEnable"]
+	logFile = None
+	if bDebug:
+		logFile = cfg["Debug"]["file"]
 
-	# lFile = sys.path[0] + '/log/Dictionary5_log.log'
 	lFile = os.path.join(curPath, logFile)
 
-	_logging.basicConfig(level = _logging.DEBUG,
-		format = '%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s:\n%(message)s',
-		datefmt = '%Y-%m-%d %H:%M:%S',
-		filename = lFile,
-		filemode = 'a')
-	gLogger.setLevel(_logging.INFO)
-	# gLogger.setLevel(_logging.NOTSET)
-	stream_handler = _logging.StreamHandler()
-	# formatter = _logging.Formatter("[%(filename)s] %(message)s")
-	formatter = _logging.Formatter(fmt = "L%(lineno)03d %(levelname)s: %(message)s",
-                                  datefmt = "%H:%M:%S")  # 创建一个格式化对象
-	stream_handler.setFormatter(formatter)
-	gLogger.addHandler(stream_handler)
+	gLogger = CreateLogger("Dictionary", logFile)
+	SetLogger(gLogger)
 
 	gLogger.info("CEF Python {ver}".format(ver = cef.__version__))
 	gLogger.info("Python {ver} {arch}".format(
@@ -110,36 +80,46 @@ def main():
 	gLogger.info("Tk {ver}".format(ver = tk.Tcl().eval('info patchlevel')))
 	gLogger.info("Dictionary {ver}".format(ver = version))
 
+	# gLogger.info(cfg);
 	# global app
 	app = dictApp()
 	# globalVar.SetApp(app)
 	SetApp(app)
 
-	bAgent = cfg.getboolean("Agent", "bAgent")
-	Proxy = cfg.get("Agent", "ip")
-	app.SetAgent(bAgent, Proxy)
+	bAgent = cfg["Agent"]["bAgent"]
+	if bAgent == True:
+		nProxy = cfg["Agent"]["nAgent"]
 
-	dictZip = os.path.join(curPath, "dict", "Google.zip")
-	# audioZip = os.path.join(curPath, "audio", "Google.zip")
-	# app.AddDictBase(dictZip, audioZip)
+		agentGroup = cfg["Agent"]["Info"][nProxy - 1]
+		gLogger.info(agentGroup)
+		ip = agentGroup["IP"]
+		name = agentGroup["Name"]
+		program = agentGroup["Program"]
+		gLogger.info(ip, name, program)
+		app.SetAgent(ip, name, program)
 
-	# dictPath = os.path.join(curPath, "dict", "Google")
-	audioPath = os.path.join(curPath, "audio", "Google")
-	# app.AddDictBase(dictPath, audioPath)
+	tabArray = cfg["Tab"]
+	for tabGroup in tabArray:
+		name = tabGroup["Name"]
+		dict = tabGroup["Dict"]
+		format = tabGroup["Format"]
+		dictSrc = os.path.join(curPath, dict)
+		app.AddDictBase(name, dictSrc, format)
 
-	app.AddDictBase(dictZip, audioPath)
+	audioGroup = cfg["Audio"][0]
+	name = audioGroup["Name"]
+	audio = audioGroup["Audio"]
+	audioPath = os.path.join(curPath, audio)
+	app.AddAudio(name, audioPath)
 
-	miss_dict = os.path.join(curPath, cfg.get("Miss", "miss_dict"))
-	miss_audio = os.path.join(curPath, cfg.get("Miss", "miss_audio"))
-
+	miss_dict = os.path.join(curPath, cfg["Miss"]["miss_dict"])
+	miss_audio = os.path.join(curPath, cfg["Miss"]["miss_audio"])
 	app.SetMissRecordFile(miss_dict, miss_audio)
 
-	width = int(cfg.get("GUI", "Width"))
-	height = int(cfg.get("GUI", "Height"))
-	fileURL = os.path.join(curPath, cfg.get("GUI", "html"))
+	width = int(cfg["GUI"]["Width"])
+	height = int(cfg["GUI"]["Height"])
+	fileURL = os.path.join(curPath, cfg["GUI"]["html"])
 	app.Start(width, height, fileURL)
-
-	# cfg.close()
 
 	sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
 
@@ -149,12 +129,12 @@ def main():
 	# window = MainFrame(root)
 
 	# Tk must be initialized before CEF otherwise fatal error (Issue #306)
-	# settings = {
-		# "debug": True,
-		# "log_severity": cef.LOGSEVERITY_INFO,
-		# "log_file": "log//debug.log"
-	# }
-	# cef.Initialize(settings = settings)
+	settings = {
+		"debug": True,
+		"log_severity": cef.LOGSEVERITY_ERROR,
+		"log_file": "log//debug.log"
+	}
+	cef.Initialize(settings = settings)
 
 	# settings1 = {
 		# "debug": True,
@@ -172,13 +152,11 @@ def main():
 	}
 	cef.Initialize(switches=switches)
 	'''
-	cef.Initialize()
+	# cef.Initialize()
 	app.mainloop()
 	cef.Shutdown()
 
 	gLogger.info("All are done!")
-
-# def GetApp(): return globalVar.app
 
 def set_appwindow(root):
 	if IsWindows():
@@ -199,7 +177,9 @@ def set_appwindow(root):
 
 class MainFrame(tk.Frame):
 
-	def __init__(self, root, width, height, fileURL):
+	def Start(self, root, width, height, fileURL):
+		# global gLogger
+
 		self.browser_frame = None
 		self.navigation_bar = None
 
@@ -248,7 +228,9 @@ class MainFrame(tk.Frame):
 		# tk.Grid.columnconfigure(self, 0, weight=0)
 
 		# BrowserFrame
-		self.browser_frame = BrowserFrame(self, fileURL, self.navigation_bar)
+		# self.browser_frame = BrowserFrame(self, fileURL, self.navigation_bar)
+		self.browser_frame = BrowserFrame()
+		self.browser_frame.init(self, fileURL, self.navigation_bar)
 		self.browser_frame.grid(row = 1, column = 0,
 								 sticky = (tk.N + tk.S + tk.E + tk.W))
 		tk.Grid.rowconfigure(self, 1, weight = 1)
@@ -257,18 +239,22 @@ class MainFrame(tk.Frame):
 		# Pack MainFrame
 		self.pack(fill = tk.BOTH, expand = tk.YES)
 
-		# self.bind("<Map>", self.frame_mapped)
-
 	def geometry(self, size):
+		# global gLogger
+
 		gLogger.info(size)
 		self.__window.geometry(size);
 
 	def on_root_configure(self, _):
+		# global gLogger
+
 		gLogger.debug("MainFrame.on_root_configure")
 		if self.browser_frame:
 			self.browser_frame.on_root_configure()
 
 	def on_configure(self, event):
+		# global gLogger
+
 		gLogger.debug("MainFrame.on_configure")
 		if self.browser_frame:
 			width = event.width
@@ -278,12 +264,18 @@ class MainFrame(tk.Frame):
 			self.browser_frame.on_mainframe_configure(width, height)
 
 	def on_focus_in(self, _):
+		# global gLogger
+
 		gLogger.debug("MainFrame.on_focus_in")
 
 	def on_focus_out(self, _):
+		# global gLogger
+
 		gLogger.debug("MainFrame.on_focus_out")
 
 	def on_close(self):
+		# global gLogger
+
 		gLogger.info("on_close")
 		if self.browser_frame:
 			self.browser_frame.on_root_close()
@@ -319,7 +311,7 @@ class MainFrame(tk.Frame):
 
 	def setup_icon(self):
 		# resources = os.path.join(os.path.dirname(__file__), "resources")
-		# resources = os.path.join(os.path.dirname(__file__), "data")
+        # icon_path = os.path.join(resources, "tkinter"+IMAGE_EXT)
 		icon_path = os.path.join(os.path.dirname(__file__), "main" + IMAGE_EXT)
 		if os.path.exists(icon_path):
 			self.icon = tk.PhotoImage(file = icon_path)
@@ -328,7 +320,7 @@ class MainFrame(tk.Frame):
 
 class BrowserFrame(tk.Frame):
 
-	def __init__(self, master, fileURL, navigation_bar = None):
+	def init(self, master, fileURL, navigation_bar = None):
 		self.navigation_bar = navigation_bar
 		self.closing = False
 		self.browser = None
@@ -423,11 +415,15 @@ class BrowserFrame(tk.Frame):
 			self.browser.NotifyMoveOrResizeStarted()
 
 	def on_focus_in(self, _):
+		# global gLogger
+
 		gLogger.debug("BrowserFrame.on_focus_in")
 		if self.browser:
 			self.browser.SetFocus(True)
 
 	def on_focus_out(self, _):
+		# global gLogger
+
 		gLogger.debug("BrowserFrame.on_focus_out")
 		if self.browser:
 			self.browser.SetFocus(False)
@@ -458,10 +454,14 @@ class FocusHandler(object):
 		self.browser_frame = browser_frame
 
 	def OnTakeFocus(self, next_component, **_):
+		# global gLogger
+
 		gLogger.debug("FocusHandler.OnTakeFocus, next = {next}"
 					 .format(next=next_component))
 
 	def OnSetFocus(self, source, **_):
+		# global gLogger
+
 		gLogger.debug("FocusHandler.OnSetFocus, source = {source}"
 					 .format(source = source))
 		return False
@@ -469,6 +469,8 @@ class FocusHandler(object):
 	def OnGotFocus(self, **_):
 		"""Fix CEF focus issues (#255). Call browser frame's focus_set
 		   to get rid of type cursor in url entry widget."""
+		# global gLogger
+
 		gLogger.debug("FocusHandler.OnGotFocus")
 		# self.browser_frame.focus_set()
 
@@ -476,12 +478,12 @@ class dictApp():
 
 	def __init__(self):
 
-		# self.__dictbase = GDictBase()
-		# dictPath = os.path.join(curPath, "dict", "Google")
-		# audioPath = os.path.join(curPath, "audio", "Google")
-		# self.__dictbase.set_path(dictPath, audioPath)
+		self.__enableMove = False
+		self.__bAgent = False
 
-		self.enableMove = False
+		self.__dictBaseLst = []
+		self.__nTab = 0
+		self.__curDictBase = None
 
 		# root.attributes("-alpha",0.0)
 
@@ -490,31 +492,63 @@ class dictApp():
 		self.__miss_audio.close()
 
 	def Start(self, width, height, fileURL):
+		self.__nTab = 0
+		self.__curDictBase = self.get_curDB()
+		self.__DictParseFun = self.__curDictBase.get_parseFun()
+
 		self.__root = tk.Tk()
-		self.__window = MainFrame(self.__root, width, height, fileURL)
+		self.__window = MainFrame()
+		self.__window.Start(self.__root, width, height, fileURL)
 
-	def SetAgent(self, bAgent, Proxy):
-		self.__bAgent = bAgent
-		self.__Proxy = Proxy
+	def SetAgent(self, ip, name, program):
+		self.__bAgent = True
+		self.__Proxy = ip
+		self.__Name = name
+		self.__Program = program
 
-	def AddDictBase(self, dictSrc, audioSrc):
-		self.__dictbase = GDictBase(dictSrc, audioSrc)
+	def AddAudio(self, name, audioPath):
+		self.__auidoArchive = AuidoArchive(audioPath)
+
+	def AddDictBase(self, name, dictSrc, format):
+		# global gLogger
+
+		typ = format["Type"]
+		if(typ == "ZIP"):
+			compression = format["Compression"]
+			compresslevel = format["Compress Level"]
+			dictBase = GDictBase(dictSrc, compression, compresslevel)
+		elif(typ == "SQLite"):
+			dictBase = SDictBase(dictSrc)
+		elif(typ == "mdx"):
+			dictBase = MDictBase(dictSrc)
+
+		self.__dictBaseLst.append(dictBase)
 
 	def get_browser(self):
 		return self.__window.get_browser()
 
+	def SwitchTab(self, n):
+		self.__nTab = n - 1
+		self.__curDictBase = self.get_curDB()
+		self.__DictParseFun = self.__curDictBase.get_parseFun()
+		# print(self.__nTab)
+
 	def get_curDB(self):
-		return self.__dictbase
+		return self.__dictBaseLst[self.__nTab]
 
 	def mainloop(self):
 		self.__window.mainloop()
 
 	def playMP3(self, audio):
+		# global gLogger
+
 		gLogger.info("going to play " + audio)
 		self.__window.get_browser().ExecuteFunction("playMP3", audio)
 		return True
 
 	def dwf_callbackfunc(self, blocknum, blocksize, totalsize):
+		# global gLogger
+
 		'''回调函数
 		@blocknum: 已经下载的数据块
 		@blocksize: 数据块的大小
@@ -525,86 +559,63 @@ class dictApp():
 		gLogger.info("%.2download_filef%%" %percent)
 
 	# To-Do:
+	# add progress hint
+	# detect proxy program before download
+	# error return
 	def download_file(self, url, local):
-		# headers = {
-			# 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
-		# }
-			# proxy_handler = urllib.request.ProxyHandler({
-				# 'http': 'web-proxy.oa.com:8080',
-				# 'https': 'web-proxy.oa.com:8080'
-			# })
-			# opener = urllib.request.build_opener(proxy_handler)
-			# urllib.request.install_opener(opener)
+		# global gLogger
 
-			# request = urllib.request.Request(url=url, headers=headers)
-			# response = urllib.request.urlopen(request)
-			# gLogger.info(response.read().decode('utf-8'))		
-		try:
-			gLogger.info("Going to download %s" %url)
-			if(self.__bAgent == True):
-				# proxy = 'http://127.0.0.1:8087'
-				# proxy = 'http://10.0.4.225:3128'
-				# proxy = 'http://10.0.4.206:8118'
+		# try:
+		gLogger.info("Going to download %s" %url)
+		if(self.__bAgent == True):
+			proxy_handler = urllib.request.ProxyHandler({
+				'http': self.__Proxy,
+				'https': self.__Proxy
+			})
+			opener = urllib.request.build_opener(proxy_handler)
 
-				# python2
-				# proxy_handler = urllib2.ProxyHandler({'http': proxy})
-				## opener = urllib2.build_opener(proxy_handler, urllib2.ProxyHandler)
-				# opener = urllib2.build_opener(proxy_handler)
-				# python3
-				proxy_handler = urllib.request.ProxyHandler({
-					'http': self.__Proxy,
-					'https': self.__Proxy
-				})
-				opener = urllib.request.build_opener(proxy_handler)
+		else:
+			opener = urllib.request.build_opener()
 
-			else:
-				# python3
-				opener = urllib.request.build_opener()
+		r = opener.open(url)
+		file = open(local, 'wb')
+		file.write(r.read())
+		file.close()
 
-			# urllib2.install_opener(opener)
-			# urllib.urlretrieve(url, local, self.dwf_callbackfunc)
-
-			# proxies = {'http': 'http://127.0.0.1:8087'}
-			# opener = urllib.FancyURLopener(proxies)
-			# opener.retrieve(url, local, self.dwf_callbackfunc)
-
-			r = opener.open(url)
-			file = open(local, 'wb')
-			file.write(r.read())
-			file.close()
-
-		except Exception as ex:
-			gLogger.error("fail to download %s" %url)
-			gLogger.info("Exception: " + str(ex))
-			return False
-		return True
+		# except Exception as ex:
+			# gLogger.error("fail to download %s" %url)
+			# gLogger.info("Exception: " + str(ex))
+			# return False
+		# return True
 
 	def OnButtonClicked(self, id):
+		# global gLogger
+
 		if id == "btn_close": tk.Tk().quit()
 		elif id == "btn_min": self.__window.min()
 		else: 
 			gLogger.info(id)
 
 	def startMove(self, x, y):
-		gLogger.info("startMove!")
-		self.enableMove = True
+		# gLogger.info("startMove!")
+		self.__enableMove = True
 		# self.x = event.x
-		self.x = x
+		self.__x = x
 		# self.y = event.y
-		self.y = y
+		self.__y = y
 
-		self.root_x = self.__root.winfo_rootx()
-		self.root_y = self.__root.winfo_rooty()
+		self.__root_x = self.__root.winfo_rootx()
+		self.__root_y = self.__root.winfo_rooty()
 
-		gLogger.info("self.x: %d self.y: %d" %(self.x, self.y))
-		gLogger.info("self.root_x: %d self.root_y: %d" %(self.root_x, self.root_y))
+		# gLogger.info("self.x: %d self.y: %d" %(self.__x, self.__y))
+		# gLogger.info("self.root_x: %d self.root_y: %d" %(self.__root_x, self.__root_y))
 
 	def moving(self, x, y):
-		if(not self.enableMove): return
+		if(not self.__enableMove): return
 
-		newX = self.root_x + x - self.x 
+		newX = self.__root_x + x - self.__x 
 		# newX = self.winfo_x() + x - self.x 
-		newY = self.root_y + y - self.y
+		newY = self.__root_y + y - self.__y
 		# newY = self.winfo_y() + y - self.y
 
         # deltax = event.x - self.x
@@ -612,42 +623,71 @@ class dictApp():
         # x = self.winfo_x() + deltax
         # y = self.winfo_y() + deltay
 
-		gLogger.info("newX: %d newY: %d" %(newX, newY))
+		# gLogger.info("newX: %d newY: %d" %(newX, newY))
 
 		# self.__root.geometry("+%s+%s" %(newX, newY))
 		self.__window.geometry("+%s+%s" %(newX, newY))
 
 	def stopMove(self, x, y):
-		gLogger.info("stopMove!")
-		self.enableMove = False
-		self.x = None
-		self.y = None
+		# gLogger.info("stopMove!")
+		self.__enableMove = False
+		self.__x = None
+		self.__y = None
 
-	def log(self, info):
-		gLogger.info(info)
+	def log(self, lvl, info):
+		if(lvl == "info"):
+			gLogger.info(info)
+		elif(lvl == "error"):
+			gLogger.error(info)
 
 	def QueryWord(self, word):
-		gLogger.info("word = %s" %word)
-		# globalVar.GetApp().get_curDB().query_word(word)
-		dict, audio = self.get_curDB().query_word(word)
-		# gLogger.info("word = %s" %dict)
-		# Execute Javascript function
-		# self.__window.get_browser().ExecuteFunction("google_search")
-		# gLogger.info("dict = " + str(dict))
-		# gLogger.info("audio = " + str(audio))
-		# if(dict and audio):
-		if(dict):
-			self.__window.get_browser().ExecuteFunction("google_dict", word, dict, audio)
-		else:
-			gLogger.info("miss dict of %s" %word)
-			self.RecordMissDict(word)
+		# global gLogger
 
-		if(audio):
-			# self.speechWord(word, True);
-			self.speechWord(audio)
-		else:
-			gLogger.info("miss audio of %s" %word)
+		gLogger.info("word = %s;" %word)
+
+		# curDictbase = self.get_curDB()
+
+		bDictOK, dict = self.__curDictBase.query_word(word)
+		bAudioOK, audio = self.__auidoArchive.query_audio(word)
+
+		if(not bDictOK):
+			gLogger.error("dict: " + dict)
+			self.RecordMissDict(word)
+			dict = '{\n' + \
+					'	"query": "' + word +  '",\n' + \
+					'	"sourceLanguage": "en",\n' + \
+					'	"targetLanguage": "zh-Hans",\n' + \
+					'	"primaries": [{\n' + \
+					'		"type": "headword",\n' + \
+					'		"terms": [{\n' + \
+					'				"type": "text",\n' + \
+					'				"text": "' + word + '",\n' + \
+					'				"language": "en"\n' + \
+					'			}, {\n' + \
+					'				"type": "phonetic",\n' + \
+					'				"text": "' + dict + '",\n' + \
+					'				"language": "en",\n' + \
+					'				"labels": [{\n' + \
+					'					"text": "DJ",\n' + \
+					'					"title": "Phonetic"\n' + \
+					'				}]\n' + \
+					'			}\n' + \
+					'		]\n' + \
+					'	}]\n' + \
+					'}'
+
+		if(not bAudioOK):
+			gLogger.error("audio: " + audio)
 			self.RecordMissAudio(word)
+			audio = os.path.join(os.getcwd(), "audio", "WrongHint.mp3")
+
+		tabId = "panel" + str(self.__nTab + 1)
+
+		# gLogger.info(dict)
+		if bDictOK:
+			self.__window.get_browser().ExecuteFunction(self.__DictParseFun, word, tabId, dict, audio)
+		else:
+			self.__window.get_browser().ExecuteFunction("dictJson", word, tabId, dict, audio)
 
 	def SetMissRecordFile(self, miss_dict, miss_audio):
 		self.__miss_dict = open(miss_dict, mode = "a")
@@ -659,22 +699,25 @@ class dictApp():
 	def RecordMissAudio(self, word):
 		self.__miss_audio.write(" " + word)
 
+	'''
 	def speechWord(self, word, isUs):
 		# gLogger.info("going to speech %s" %word)
 		# mp3 = sys.path[0] + "\\Audio\\Google\\" + word + ".mp3"
-		mp3 = os.path.join(os.getcwd(), "audio/Google/" + word + ".mp3")
-		gLogger.info("mp3 = %s" %mp3)
-		if os.path.isfile(mp3) == False:
-			gLogger.error("The is no mp3: " + mp3)
-			msgBox.showerror(word, "The is no mp3: " + mp3)
+		# mp3 = os.path.join(os.getcwd(), "audio/Google/" + word + ".mp3")
+		audio = self.__auidoArchive.query_audio(word)
+		gLogger.info("mp3 = %s" %audio)
+		if os.path.isfile(audio) == False:
+			gLogger.error("The is no mp3: " + audio)
+			msgBox.showerror(word, "The is no mp3: " + audio)
 			return "break"
 
 		try:
-			self.playMP3(mp3)
+			self.playMP3(audio)
 		except Exception as ex:
-			gLogger.error("wrong mp3: " + mp3)
-			msgBox.showerror(word, "wrong mp3: " + mp3)
+			gLogger.error("wrong mp3: " + audio)
+			msgBox.showerror(word, "wrong mp3: " + audio)
 			gLogger.info(Exception + ": " + ex)
+	'''
 
 	def speechWord(self, audio):
 
@@ -691,10 +734,13 @@ class dictApp():
 			gLogger.info(Exception + ": " + ex)
 
 	def OnTextChanged(self, word):
+		# global gLogger
+
 		wdsLst = []
 		# gLogger.info("OnTextChanged: word = ", word)
 		# ret = globalVar.GetApp().get_curDB().get_wordslst(wdsLst, word)
-		ret = self.get_curDB().get_wordsLst(wdsLst, word)
+		# curDictbase = self.get_curDB()
+		ret = self.__curDictBase.get_wordsLst(wdsLst, word)
 		if (not ret): 
 			# gLogger.info("OnTextChanged: no similiar words!")
 			return False
@@ -702,12 +748,6 @@ class dictApp():
 		for wd in wdsLst:
 			self.__window.get_browser().ExecuteFunction("append_words_list", wd)
 			# gLogger.info("found word: %s" %wd)
-
-	def wrongJson(self, word): 
-		ret = self.__dictbase.del_word(word)
-		if ret == True: 
-			# msgBox.showinfo("Info", "Success to delete " + word)
-			gLogger.info("Success to delete: " + word)
 
 	def OnSaveHtml(self, html):
 		outFile = filedialog.asksaveasfile(mode = 'w', defaultextension = ".html")

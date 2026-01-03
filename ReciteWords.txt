@@ -1,24 +1,31 @@
-﻿v1.0.0.7
-To-Do:
-* select words difficult level
-* reset to zero
-* multiuser
-* add console
+﻿To-Do:
+* use words.dict to record extra info such as "level", "star"
+* support multiuser
+	* select words difficult level
+	* reset to zero
+* add state indicator
 * add wrong hint in voice
 * "new" label when word first pop
-* mp3 play in zip file
+
+
+v1.0.0.7
+* use json as configuration file					OK
+* initial support multiuser							OK
 
 
 v1.0.0.6
 Known Bugs:
-* out of index hapeen when last one was chopped
+* out of index happen when last one was chopped
 
 Bugs Fixed:
-* do "next" in the "study mode" of the last word, it'll be wrong		ok
+* do "next" in the "study mode" of the last word, it'll be wrong		OK
 
 Fun Added:
-* log function			ok
-* quit warring			ok
+* log function			OK
+* quit warring			OK
 * save progress before quiting in mid(Bug: wrong add 1 to words which was recited)	OK
-* add count function				ok
+* add count function				OK
 * mp3 play by mp3play in windows 10 and by mplayer in Ubuntu 18.04		OK
+* display log in console												OK
+* word is added to learn list only once in test mode, and hint it		OK
+* give up remember word to display word in "Next"						OK

@@ -1,20 +1,17 @@
 ﻿To-Do:
-* use json as configuration file
-* warning of not found, including sound and reason in page
-* double click to query
+* edit word on line in SDictBase
+* add "webDefinitions" of GDictBase
+* standard json (TemplateJson)
 * dynamic tab
 	* read cfg to create tab
 	* add x to tab to remove the tab
-	* add + to add tab and associate with new dict
-* support and edit word online in SDictBase
-* add "webDefinitions" of GDictBase
-* support to read *.mdd, *.mdx
+	* add + to add tab and associate with new dictionary
 * zipArchive list split to path and name
 * word dict
-	* orgin word (margins -> margin)
+	* origin word (margins -> margin)
 	* read/mark function
 * multiThread
-	* interupt any time in searching word
+	* interrupt any time in searching word
 * black list
 * menu
 * up and down key to choice list word
@@ -25,15 +22,42 @@
 	* next button
 * display or hide cmd window on command
 * delete file to recycle bin
-* distinguish letter and capital in dict
-* support phase
+* singular
+
+
+v1.0.0.8
+* use json as configuration file								OK
+* warning of not found in page including sound and reason 		OK
+* unify logging													OK
+* GDictBase check text instead of query							OK
+* double click to query											OK
+* distinguish letter and capital in dict						OK
+* support multi-Dictbase										OK
+* support phase													OK
+* support single mdx/mdd										OK
+* support SDictBase												OK
+* slite AuidoArchive from GDictBase								OK
+
+Bugs Fixed:
+* some like "\x27" doesn't display well in html					OK
+* characterize doesn't pronounce								OK
+* miss largest by large											OK
+
+Known Bugs:
+* when disable title, can't input word in Ubuntu 18.04, see https://exceptionshub.com/tkinters-overideredirect-prevents-certain-events-in-mac-and-linux.html
+* movable don't work well
+* illegal close may cause zip error
+* icon in taskbar
+* delete word command can't delete word in word's dictionary
+* paste word will cause two same words in words list sometimes
+* SDictBase doesn't display well
 
 
 v1.0.0.7
 
 Function Added:
-* spearate mp3 in multi folder						OK
-* support multi pronouncation in html				OK		
+* separate mp3 in multi folder						OK
+* support multi pronunciation in html				OK		
 * pronounce word even it's not in html				OK
 * support ini file to read configuration			OK
 * read and write mp3 in compressed file				cancel
@@ -41,7 +65,7 @@ Function Added:
 * support datum instead of file						OK
 	support google_search							OK
 	support mp3Play									cancel
-	support similiar word							OK
+	support similar word							OK
 * record name of wrong json or mp3 and del it		OK
 
 Known Bugs:
@@ -52,12 +76,12 @@ Known Bugs:
 * del word command can't del word in word's dict
 * miss largest by large
 * characterize doesn't pronounce
-* soem like "\x27" doesn't display well in html
+* some like "\x27" doesn't display well in html
 
 Bugs Fixed:
 * fail to download mp3								OK
 * after querying word focus on word input box		OK
-* not found shouldn't be judged by programe			OK
+* not found shouldn't be judged by program			OK
 * wrong to remove valid json file					OK
 
 
@@ -75,24 +99,24 @@ Known Bugs:
 * after querying word focus on word input box
 * icon in taskbar
 * delete word command can't delete word in word.dict
-* not found shouldn't be judged by programe
+* not found shouldn't be judged by program
 * pronounce at checking function should leave it to js
 * remove valid json file
 
 Bugs fixed:
-* some word display very slow : from, big, optimistic, crime, course	ok
-* single voice file is not be download   ok
-* when word is not found, don't display "mark it as new word" symbol	ok
-* some real words show "Not found" : 	ok
-* when double click the list column, sometime it will show "404" page in web browse		ok
+* some word display very slow : from, big, optimistic, crime, course	OK
+* single voice file is not be download   OK
+* when word is not found, don't display "mark it as new word" symbol	OK
+* some real words show "Not found" : 	OK
+* when double click the list column, sometime it will show "404" page in web browse		OK
 * symbol can't save correctly in json file.			almost OK
-* proxy dosen't work in download_file fun of dictApp		ok
+* proxy doesn't work in download_file fun of dictApp		OK
 
 Add function:
-* work on Ubuntu 18.04					ok
-* replace with jPlayer to play mp3		ok
-* delete word online					ok
-* delete audio file alone				ok
+* work on Ubuntu 18.04					OK
+* replace with jPlayer to play mp3		OK
+* delete word on line					OK
+* delete audio file alone				OK
 
 
 1.0.0.5
@@ -112,26 +136,13 @@ Add function:
 * check illegal letter             OK
 * display explains in several rows   OK
 * if it can't find voice file , pronounce it  by TTS     OK
-* first download xml file, then analyse it  OK
+* first download xml file, then analyze it  OK
 * replace phase such as <美>, with right expression OK
 * skip wrong xml analysis, to display "Not found!", and record in "wrong.txt"    cancel
 * after display word's explain, select it in edit box 	OK
 
-Wrong word analyse
+Wrong word analyze
 <([^a-z>]+)>       &lt;$1&gt;                           OK
-
-http://dict-co.iciba.com/api/dictionary.php?w=
-
-http://dict.qq.com/dict?q=word
-
-在.NET使用JSON作为数据交换格式
-http://blog.csdn.net/zhoufoxcn/article/details/6254657
-
-json入门基础教程
-http://www.cnblogs.com/mzoylee/archive/2009/07/20/1526966.html
-
-JS 解析 JSON 及 XML
-http://www.cnblogs.com/lucas/archive/2009/04/13/1434566.html
 
 replace
 &#230;	æ
@@ -141,19 +152,3 @@ replace
 &#652;	ʌ
 
 every now and then
-
-可以实现，但是比较麻烦
-1、用https://github.com/grumdrig/node-sqlite的驱动来访问sqlite数据库
-2、用node.js来写一个http服务器,在8000端口上监听请求，如：http://localhost:8000/getusers
-返回[{”name”:”www”,”age”:25}]
-3、用ajax去请求上面的地址
-
-sql.js - JavaScript的SQLite数据库
-SQLite的JavaScript 移植版本，使用 Emscripten 对 SQLite 的 C 代码进行编译。
-
-示例代码：
-
-var db = SQL.open();
-var data = db.exec(command);
-
-https://github.com/kripken/sql.js

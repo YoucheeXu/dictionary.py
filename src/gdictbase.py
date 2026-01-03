@@ -4,128 +4,126 @@
 #coding=utf-8
 
 import os
-# import globalVar
-from globalVar import *
-from ZipArchive import *
 import tempfile
 import json
-from DictBase import *
+
+from DictBase import DictBase
+from ZipArchive import ZipArchive
+from globalVars import GetLogger, GetApp
 
 '''
+v2.2 delete audio part
+
 v2.1
-a/able.json
+a/able.json in zip
 
 v2.0 support zip dict
 '''
 
+# global gLogger
+
 #################################################
 class GDictBase(DictBase):
 
-	def __init__(self, dictZip, audioPath):
+	def __init__(self, dictSrc, compression, compresslevel):
+		global gLogger
 
-		self.__dictZip = ZipArchive(dictZip)
-		# self.__audioZip = ZipArchive(audioZip)
+		gLogger = GetLogger()
+
+		self.__dictZip = ZipArchive(dictSrc, compression, compresslevel)
 		self.__tempDir = tempfile.gettempdir()
-		print(self.__tempDir)
-		self.__audioPath = audioPath
+		GetApp().log("info", self.__tempDir)
+
+	def get_parseFun(self):
+		return "dictJson"
 
 	def query_word(self, word):
-		# dict = None
-		datum = None
-		audio = None
 
+		# fileName = os.path.join(word[0], word + ".json")
 		fileName = word[0] + "/" + word + ".json"
-		
-		if(self.__dictZip.bFileIn(fileName)):
-			dict = self.__dictZip.readFile(fileName)
-		else:
-			wordFile = os.path.join(self.__tempDir, word + ".json")
-			jsonURL = "http://dictionary.so8848.com/ajax_search?q=" + word
-			GetApp().download_file(jsonURL, wordFile);
 
-			dict = None
-			if os.path.exists(wordFile):
-				with open(wordFile, 'rb') as f:
-					dict = f.read()
-					if(self.__VerifyJson(wordFile, word, dict)):
+		try:
+			if(self.__dictZip.bFileIn(fileName)):
+				dict = self.__dictZip.readFile(fileName)
+			else:
+				wordFile = os.path.join(self.__tempDir, word + ".json")
+				jsonURL = "http://dictionary.so8848.com/ajax_search?q=" + word
+				jsonURL = jsonURL.replace(" ", "%20")
+				GetApp().download_file(jsonURL, wordFile)
+
+				if os.path.exists(wordFile):
+					with open(wordFile, 'rb') as f:
+						dict = f.read()
+						inWord = self.__GetInWord(dict)
+					os.remove(wordFile)
+
+					if(inWord):
 						# self.__dictZip.addFile(wordFile)
 						# addFile(self, fileName, datum)
-						print("%s's json is OK!" %word)
-						self.__dictZip.addFile(fileName, dict)
+						if inWord == word:
+							# print("%s's json is OK!" %word)
+							GetApp().log("info", "%s's json is OK!" %word)
+							self.__dictZip.addFile(fileName, dict)
+						else:
+							datum = "Wrong word: " + inWord + ";"
+							return False, datum
 					else:
-						dict = None
+						datum = "No word in dictionary."
+						return False, datum
 
-				os.remove(wordFile)
+				else:
+					datum = "Fail to download: " + word
+					return False, datum
 
-		# print("%s = %s" %(word, dict))
+			# print("%s = %s" %(word, dict))
 
-		if(dict):
-			# print(dict)
-			datum = json.loads(dict, strict = False)
+			if(dict):
+				dictDatum = json.loads(dict, strict = False)
 
-			if(datum["ok"]):
-				info = datum["info"]
-				# print(info)
+				if(dictDatum["ok"]):
+					info = dictDatum["info"]
 
-				# regex = re.compile(r'\\(?![/u"])')
-				# info_fixed = regex.sub(r"\\\\", info)
-				# dict = json.loads(info_fixed, strict = False)
-				# dict = info_fixed
-				dict = info
-				# print("%s = %s" %(word, dict))
-
-		'''
-		fileName = word + ".mp3"
-		if(self.__audioZip.bFileIn(fileName)):
-			audio = self.__audioZip.readFile(fileName)
-		else:
-			audioFile = os.path.join(self.__tempDir, word + ".mp3")
-			audioURL = "https://ssl.gstatic.com/dictionary/static/sounds/oxford/" + word + "--_us_1.mp3"
-
-			GetApp().download_file(audioURL, audioFile);
-			if os.path.exists(audioFile):
-				with open(audioFile, 'rb') as f:
-					audio = f.read()
-					self.__audioZip.addFile(fileName, audio)
-
-				os.remove(audioFile)
-
-		return dict, audio
-		'''
-
-		audioFile = os.path.join(self.__audioPath, word[0], word + ".mp3")
-
-		if(not os.path.exists(audioFile)):
-			audioURL = "https://ssl.gstatic.com/dictionary/static/sounds/oxford/" + word + "--_us_1.mp3"
-
-			GetApp().download_file(audioURL, audioFile);
-			if (not os.path.exists(audioFile)):
-				audioFile = None
-
-		return dict, audioFile
-
-	def __VerifyJson(self, jsonFile, word, dict):
-		try:
-			# with open(jsonFile, 'rb') as f:
-				# dict = f.read()
-				# print(dict)
-
-			datum = json.loads(dict, strict = False)
-
-			if(datum["ok"]):
-				info = datum["info"]
-
-				regex = re.compile(r'\\(?![/u"])')
-				info_fixed = regex.sub(r"\\\\", info)
-				datum = json.loads(info_fixed, strict = False)
-				# datum = json.loads(info, strict = False)
-				if(datum["query"] == word):
-					return True
+					# regex = re.compile(r'\\(?![/u"])')
+					# info_fixed = regex.sub(r"\\\\", info)
+					# dict = info_fixed
+					datum = info
+					# print("%s = %s" %(word, dict))
+					return True, datum
+			else:
+				datum = "Fail to read: " + word
+				return False, datum
 
 		except Exception as err:
-			print(err)
+			# print("fail to query dict of " + word)
+			GetApp().log("error", "fail to query dict of " + word)
+			datum = str(err)
+			if os.path.exists(wordFile):
+				os.remove(wordFile)
+			return False, datum
 
-		return False
+		datum = "Unknown error!"
+		return False, datum
+
+	def __GetInWord(self, dict):
+
+		datum = json.loads(dict, strict = False)
+
+		if(datum["ok"]):
+			info = datum["info"]
+			# print(info)
+			# GetApp().log("info", info)
+			# regex = re.compile(r'\\(?![/u"])')
+			# info_fixed = regex.sub(r"\\\\", info)
+			# GetApp().log("info", info_fixed)
+			# datum = json.loads(info_fixed, strict = False)
+			# info = info.replace('\\"', '"')
+			# info = info.replace('/', '')
+			info = info.replace('\\', '\\\\')
+			# GetApp().log("info", info)
+			datum = json.loads(info, strict = True)
+			return datum["primaries"][0]["terms"][0]["text"]
+
+		return None
 
 	def get_wordsLst(self, wdMatchLst, word):
 
@@ -140,15 +138,5 @@ class GDictBase(DictBase):
 		else: return False
 
 	def del_word(self, word):
-		raise NotImplementedError("don't suppor to del dict of  " + word)
-		return False
-
-	def del_audio(self, word):
-		'''
-		raise NotImplementedError("don't suppor to del audio of  " + word)
-		return False
-		'''
-
-		audioFile = self.__audioPath + word + ".mp3"
-		if os.path.isfile(audioFile): os.remove(audioFile)
-		return not os.path.exists(audioFile)
+		fileName = word[0] + "/" + word + ".json"
+		return self.__dictZip.delFile(fileName)

@@ -5,12 +5,17 @@
 
 import abc
 
+from src.globalvar import GetLogger
+
 #################################################
 class DictBase(metaclass = abc.ABCMeta):
 
-	def __init__(self, dictPath, audioPath):
-		self.__GDictPath = dictPath
-		self.__GAudioPath = audioPath
+	# def __init__(self, dictSrc):
+		# self.__dictSrc = dictSrc
+
+	@abc.abstractmethod
+	def get_parseFun(self):
+		pass
 
 	@abc.abstractmethod
 	def query_word(self, word):
@@ -22,8 +27,4 @@ class DictBase(metaclass = abc.ABCMeta):
 
 	@abc.abstractmethod
 	def del_word(self, word):
-		pass
-
-	@abc.abstractmethod
-	def del_audio(self, word):
 		pass

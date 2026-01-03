@@ -1,19 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+import os
+import platform
 
-# ver 1.0.0.6
-
-'''
-To-Do:
-* display log in console												wait to test
-* word is added to learn list only once in test mode, and hint it		wait to test
-* give up rember word to display word in "Next"							wait to test
-'''
-
-
-import sys, os, platform
-
-import ctypes
 try:	# python3
 	import tkinter as tk
 	import tkinter.messagebox as msgBox
@@ -21,52 +10,57 @@ except ImportError:
 	import Tkinter as tk
 	import tkMessageBox as msgBox
 
-WINDOWS = (platform.system() == "Windows")
-LINUX = (platform.system() == "Linux")
-MAC = (platform.system() == "Darwin")
-
-from src.sdictbase import SDictBase
-import logging as _logging
-import configparser
-import string
 import datetime
 import time
 import random
 
-# Globals
-global gLogger
-gLogger = _logging.getLogger("ReciteWords6")
-global app
+import json
+
+from src.usrprogress import UsrProgress
+from src.sdictbase import SDictBase
+from src.auidoarchive import AuidoArchive
+from src.globalvar import *
+from src.utils import *
 
 def main():
-	global app
+	global gApp, gLogger, gCfg
 
-	# lFile = sys.path[0] + "\\log\\recite_" + str(datetime.date.today()) + "_log.log"
-	lFile = os.path.join(sys.path[0], "log", "reciteLog.log")
-	_logging.basicConfig(level = _logging.DEBUG,
-		format = '%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s:\n%(message)s',
-		datefmt = '%Y-%m-%d %H:%M:%S',
-		filename = lFile,
-		filemode = 'w')
-	#定义一个StreamHandler，将DEBUG级别或更高的日志信息打印到标准错误，并将其添加到当前的日志处理对象#
-	stream_handler = _logging.StreamHandler()
-	# gLogger.setLevel(_logging.DEBUG)
-	gLogger.setLevel(_logging.INFO)
-	# formatter = _logging.Formatter('%(levelname)s - %(message)s')
-	formatter = _logging.Formatter(fmt = "L%(lineno)03d %(levelname)s: %(message)s",
-                                  datefmt = "%H:%M:%S")  # 创建一个格式化对象	
-	stream_handler.setFormatter(formatter)
-	gLogger.addHandler(stream_handler)
+	curPath = os.getcwd()
+	cfgFile = os.path.join(curPath, "ReciteWords.json")
+	# print("cfgFile : " + cfgFile)
+	# print(cfgFile)
+	with open(cfgFile, 'rb') as f:
+		datum = f.read()
+	gCfg = json.loads(datum, strict = False)
+
+	version = gCfg["Common"]["ver"]
+
+	bDebug = gCfg["Debug"]["Enable"]
+	logFile = None
+	
+	if bDebug:
+		logFile = gCfg["Debug"]["File"]
+
+	lFile = os.path.join(curPath, logFile)
+
+	gLogger = CreateLogger("ReciteWords", logFile)
+	SetLogger(gLogger)
 
 	gLogger.info(str(datetime.date.today()))
-	gLogger.info(platform.python_version())
+	# gLogger.info(platform.python_version())
+	gLogger.info("Python {ver} {arch}".format(
+			ver = platform.python_version(), arch = platform.architecture()[0]))
+	gLogger.info("Tk {ver}".format(ver = tk.Tcl().eval('info patchlevel')))
+	gLogger.info("ReciteWords {ver}".format(ver = version))
+
 	try:
 		root = tk.Tk()
 		#root.geometry("800x600")
-		app = MyApp(root)
+		gApp = MyApp(root)
+		SetApp(gApp)
 		root.mainloop()
 	except Exception as ex:
-		print(Exception, ": ", ex)
+		gLogger.error(Exception, ": ", ex)
 
 class MainFrame(tk.Toplevel):
 	""""""
@@ -161,29 +155,33 @@ class MainFrame(tk.Toplevel):
 		return "break"
 
 	def __initDict(self):
+		# global gLogger
 
-		# sFile = sys.path[0] + "\\dict\\15000.dict"
-		sFile = os.path.join(sys.path[0], "dict", "15000.dict")
-		print("sFile = ", sFile)
-		if os.path.isfile(sFile) == False:
-			_logging.error("The is no dict: " + sFile)
-			#self.__Exit_App()
-			os._exit(-1)
+		curPath = os.getcwd()
+		gLogger.info("curPath: %s" %curPath)
+		dict = "dict\\15000.dict"
+		dictFile = os.path.join(curPath, dict)
+		gLogger.info("dict: %s" %dictFile)
+		audio = "audio\\Google"
+		audioFile = os.path.join(curPath, audio)
+		gLogger.info("audio: %s" %audioFile)
+		progress = "dict\\XYQ.progress"
+		progressFile = os.path.join(curPath, progress)
+		gLogger.info("progress: %s" %progressFile)
 
-		self.__mySDict = SDictBase()
-		if self.__mySDict.open(sFile) == False:
-			_logging.error("can't open: " + sFile)
+		try:
+			self.__dictBase = SDictBase(dictFile)
+			self.__audioBase = AuidoArchive(audioFile)
+			self.__usrProgress = UsrProgress()
+			self.__usrProgress.Open(progressFile)
+
+		except Exception as error:
+			gLogger.error(error)
 			self.__Exit_App()
 
-		# audio = sys.path[0] + "\\Audio\\Google.zip"
-		# if os.path.isfile(audio) == False:
-			# _logging.error("There is no audio: " + audio)
-			# self.__Exit_App()
-
-		# self.__audioFile = zipfile.ZipFile(audio, "r")
-		# #_logging.info(__audioFile.namelist())
-
 	def __GoStudyMode(self):
+		# global gLogger
+
 		self.__Mode.set("Study Mode")
 		self.title("Study Mode")
 		gLogger.info("Study Mode")
@@ -211,7 +209,8 @@ class MainFrame(tk.Toplevel):
 		if l > 0: 
 			word = self.__CurLearnLst[self.__CurLearnPos]
 
-			lastDate = self.__mySDict.get_item(word, "LastDate")
+			# lastDate = self.__mySDict.GetItem(word, "LastDate")
+			lastDate = self.__usrProgress.GetLastDate(word)
 
 			if lastDate == None: self.__Score.set("New!")
 			else: self.__Score.set("")
@@ -234,6 +233,8 @@ class MainFrame(tk.Toplevel):
 			# self.__GoTestMode()
 
 	def __GoTestMode(self):
+		# global gLogger
+
 		self.__Mode.set("Test Mode")
 		self.title("Test Mode")
 		gLogger.info("Test Mode")
@@ -272,10 +273,11 @@ class MainFrame(tk.Toplevel):
 			self.__Exit_App()
 
 	def __Test_Next(self):
+		# global gLogger
 
-		# _logging.info("TestPos: %d" %(self.__CurTestPos))
+		# gLogger.info("TestPos: %d" %(self.__CurTestPos))
 		word = self.__CurTestLst[self.__CurTestPos]
-		_logging.info("TestWord: %s, familiar: %.1f" %(word, self.__WordsDict[word]))
+		gLogger.info("TestWord: %s, familiar: %.1f" %(word, self.__WordsDict[word]))
 
 		self.__Play_MP3(word)
 
@@ -300,7 +302,7 @@ class MainFrame(tk.Toplevel):
 				self.__Study_Next()
 			else:
 				self.__CurCount = 1
-				_logging.info("curCount: %d" %(self.__CurCount))
+				gLogger.info("curCount: %d" %(self.__CurCount))
 				self.__CurTestLst = self.__CurLearnLst[:]
 				self.__GoTestMode()
 				# self.__LearnLst = []
@@ -317,8 +319,8 @@ class MainFrame(tk.Toplevel):
 				self.__Score.set("Wrong!")
 				# self.__LearnLst.append(word)
 				self.__numOfLearn.set("%d words to Learn!" %(len(self.__LearnLst)))
-				_logging.info("ErrCount: %d", self.__ErrCount)
-				_logging.info("Right word: %s, Wrong word: %s." %(word, input_word))
+				gLogger.info("ErrCount: %d", self.__ErrCount)
+				gLogger.info("Right word: %s, Wrong word: %s." %(word, input_word))
 				if self.__ErrCount == 3:
 					self.__CurTestPos -= 1
 					self.__ErrCount -= 1
@@ -337,10 +339,10 @@ class MainFrame(tk.Toplevel):
 					self.__wordInput.delete(0, tk.END)
 					self.__wordInput.insert(tk.END, word)
 					self.__Score.set("Go on!")
-					# _logging.info("LearnLst = " + "".join(list(str(self.__LearnLst))))
+					# gLogger.info("LearnLst = " + "".join(list(str(self.__LearnLst))))
 					self.__WordsDict[word] -= 1
 					self.__LearnLst.append(word)
-					_logging.info(word + " has been added in learn list.")
+					gLogger.info(word + " has been added in learn list.")
 					return
 			else: 
 				self.__Score.set("OK!")
@@ -351,10 +353,11 @@ class MainFrame(tk.Toplevel):
 				self.__Test_Next()
 			else: 
 				self.__CurCount += 1
-				_logging.info("curCount: %d" %(self.__CurCount))
+				gLogger.info("curCount: %d" %(self.__CurCount))
 				self.__GoTestMode()
 
 	def __Chop(self, event = None):
+		# global gLogger
 
 		word = ""
 		if self.__Mode.get() == "Study Mode": 
@@ -377,13 +380,13 @@ class MainFrame(tk.Toplevel):
 			while word in self.__TestLst:
 				self.__TestLst.remove(word)
 
-			# _logging.info(word + " is forgoten.")
+			# gLogger.info(word + " is forgoten.")
 			
 			if self.__CurLearnPos < len(self.__CurLearnLst):
 				self.__Study_Next()
 			else: 
 				self.__CurCount = 1
-				_logging.info("curCount: %d" %(self.__CurCount))
+				gLogger.info("curCount: %d" %(self.__CurCount))
 				self.__CurTestLst = self.__CurLearnLst[:]
 				self.__GoTestMode()
 
@@ -404,7 +407,7 @@ class MainFrame(tk.Toplevel):
 			while word in self.__TestLst:
 				self.__TestLst.remove(word)
 
-			# _logging.info(word + " is forgoten.")
+			# gLogger.info(word + " is forgoten.")
 
 			# if self.__WordsDict[word] != None: del self.__WordsDict[word]
 			# while word in self.__WordsDict: del self.__WordsDict[word]
@@ -413,14 +416,16 @@ class MainFrame(tk.Toplevel):
 				self.__Test_Next()
 			else: 
 				self.__CurCount += 1
-				_logging.info("curCount: %d" %(self.__CurCount))
+				gLogger.info("curCount: %d" %(self.__CurCount))
 				self.__GoTestMode()
 
 		self.__WordsDict[word] = 10
 
-		_logging.info("%s has been chopped!" %(word))
+		gLogger.info("%s has been chopped!" %(word))
 
 	def __Forgoten(self, event = None):
+		# global gLogger
+
 		word = ""
 
 		if self.__Mode.get() == "Test Mode":
@@ -437,25 +442,25 @@ class MainFrame(tk.Toplevel):
 			self.__WordsDict[word] -= 5
 			self.__LearnLst.append(word)
 
-			_logging.info(word + " is forgoten.")
+			gLogger.info(word + " is forgotten!")
 
 			if self.__CurTestPos < len(self.__CurTestLst):
 				self.__Test_Next()
 			else: 
 				self.__CurCount += 1
-				_logging.info("curCount: %d" %(self.__CurCount))
+				gLogger.info("curCount: %d" %(self.__CurCount))
 				self.__GoTestMode()
 
 		#self.__WordsDict.pop(word)
 
-		# _logging.info("length of WordsDict: %d" %(len(self.__WordsDict)))
-		# # _logging.info("WordsDict: \r\n", self.__WordsDict)
+		# gLogger.info("length of WordsDict: %d" %(len(self.__WordsDict)))
+		# # gLogger.info("WordsDict: \r\n", self.__WordsDict)
 
-		# _logging.info("length of TestWordsList: %d" %(len(self.__TestLst)))
-		# # _logging.info("TestWordsList: \r\n", self.__TestLst)
+		# gLogger.info("length of TestWordsList: %d" %(len(self.__TestLst)))
+		# # gLogger.info("TestWordsList: \r\n", self.__TestLst)
 
-		# _logging.info("length of LearnWordsList: %d" %(len(self.__LearnLst)))
-		# # _logging.info("LearnWordsList: \r\n", self.__LearnLst)
+		# gLogger.info("length of LearnWordsList: %d" %(len(self.__LearnLst)))
+		# # gLogger.info("LearnWordsList: \r\n", self.__LearnLst)
 
 		return word
 
@@ -473,25 +478,28 @@ class MainFrame(tk.Toplevel):
 		self.__Play_MP3(word)
 
 	def __Play_MP3(self, word):
-		# mp3 = sys.path[0] + "\\Audio\\Google\\" + word + ".mp3"
-		# mp3 = os.path.join(sys.path[0], "audio", "Google", word + ".mp3")
-		mp3 = os.path.join(sys.path[0], "audio", "Google", word[0], word + ".mp3")
-		print("mp3 = ", mp3)
-		if os.path.isfile(mp3) == False:
-			_logging.error("There is no mp3: " + mp3)
-			return "break"
+		# global gLogger
 
-		if (WINDOWS == True):
+		# mp3 = os.path.join(sys.path[0], "audio", "Google", word[0], word + ".mp3")
+		bAudioOK, audio = self.__audioBase.query_audio(word)
+		if (bAudioOK == False):
+			gLogger.error(audio)
+			return False
+
+		if (IsWindows() == True):
 			import mp3play
 			try:
-				clip = mp3play.load(mp3)
+				clip = mp3play.load(audio)
 				clip.play()
 				time.sleep(min(30, clip.seconds() + 0.3))
 				clip.stop()
 			except:
-				_logging.error("wrong mp3: " + mp3)
-		elif (LINUX == True):
-			os.system("mplayer " + mp3)
+				gLogger.error("Wrong mp3: " + audio)
+				return False
+		elif (IsLinux() == True):
+			os.system("mplayer " + audio)
+
+		return True
 
 	def __Play_MP3_2(self, word):
 
@@ -500,14 +508,14 @@ class MainFrame(tk.Toplevel):
 		if word in self.__audioFile.namelist():
 			mp3 = self.__audioFile.read(word)
 		else:
-			_logging.error("can't find %s." %(word))
+			gLogger.error("Can't find %s." %(word))
 			return False
 
 		#2.创建合成器对象，解析出最初的几帧音频数据
 		import pymedia.muxer as muxer
 		dm = muxer.Demuxer('mp3')
 		frames = dm.parse(mp3)
-		_logging.info(len(frames))
+		gLogger.info(len(frames))
 
 		#3.根据解析出来的 Mp3 编码信息，创建解码器对象
 		import pymedia.audio.acodec as acodec
@@ -521,7 +529,7 @@ class MainFrame(tk.Toplevel):
 		#音频数据在 frame 数组的第二个元素中
 		#r = dec.decode(frame[1])
 		r = dec.decode(mp3)
-		_logging.info("sample_rate:%s, channels:%s" %(r.sample_rate,r.channels))
+		gLogger.info("sample_rate:%s, channels:%s" %(r.sample_rate,r.channels))
 		#注意：这一步可以直接解码 r = dec.decode(data)，而不用读出第一帧音频数据
 		#但是开始会有一下噪音，如果是网络流纯音频数据，不包含标签信息，则不会出现杂音
 
@@ -550,9 +558,11 @@ class MainFrame(tk.Toplevel):
 		self.__Clear_Content()
 		self.__wordInput.insert(tk.END, word)
 
-		txtLst = []
+		# txtLst = []
 
-		if self.__mySDict.get_all(word, txtLst):
+		# if self.__mySDict.GetAll(word, txtLst):
+		bDictOK, txtLst = self.__dictBase.query_word(word)
+		if bDictOK:
 
 			symbol = txtLst[1]
 			if symbol:
@@ -570,7 +580,7 @@ class MainFrame(tk.Toplevel):
 			sentenses = txtLst[3].split("/r/n")
 			i = 0
 			for item in sentenses:
-				#_logging.info(item.strip())
+				#gLogger.info(item.strip())
 				i += 1
 				self.__Content.insert(tk.END, item.strip())
 				self.__Content.insert(tk.END, "\r\n")
@@ -579,37 +589,35 @@ class MainFrame(tk.Toplevel):
 					i = 0
 
 	def Go(self):
+		# global gCfg, gLogger
+
 		self.__today = datetime.date.strftime(datetime.date.today(), "%Y-%m-%d")
 
-		# read configure file
-		# cfgFile = sys.path[0] + "\\Data\\ReciteWords.ini"
-		cfgFile = os.path.join(sys.path[0], "ReciteWords.ini")
-		cfg = configparser.ConfigParser()  
-		cfg.read(cfgFile)
+		# print(gCfg)
+		gLogger.info("Go!")
 
-		level = cfg.get("Words", "target")
-		# limit = string.atoi(cfg.get("StudyMode", "limit"))
-		limit = int(cfg.get("StudyMode", "limit"))
-		# familiar = cfg.get("StudyMode", "familiar")
-		# self.__TestCount = string.atoi(cfg.get("StudyMode", "count"))
-		self.__TestCount = int(cfg.get("StudyMode", "count"))
+		allLimit = gCfg["General"]["Limit"]
+		newWdsLimit = gCfg["StudyMode"]["Limit"]
+		self.__TestCount = gCfg["TestMode"]["Times"]
 
-		# update conunt
+		nUser = gCfg["User"]["nUser"]
+		level = gCfg["User"]["Info"][nUser - 1]["Target"]
 
-		where = "level = '" + level + "'"
-		allCount = self.__mySDict.get_count(where)
+		# update count
 
-		where = "level = '" + level + "' and familiar > 0"
-		needCount = allCount - self.__mySDict.get_count(where)
+		# where = "level = '" + level + "'"
+		allCount = self.__usrProgress.GetAllCount(level)
 
-		where = "level = '" + level + "' and LastDate is null "
-		newCount = self.__mySDict.get_count(where)
+		# where = "level = '" + level + "' and familiar > 0"
+		needCount = allCount - self.__usrProgress.GetNeedCount(level)
 
-		where = "level = '" + level + "' and familiar = 10"
-		finishCount = self.__mySDict.get_count(where)
+		# where = "level = '" + level + "' and LastDate is null "
+		newCount = self.__usrProgress.GetNewCount(level)
 
-		global app
-		app.update_count(allCount, needCount, newCount, finishCount)
+		# where = "level = '" + level + "' and familiar = 10"
+		finishCount = self.__usrProgress.GetFnshedCount(level)
+
+		gApp.update_count(allCount, needCount, newCount, finishCount)
 
 		self.__LearnLst = []
 		self.__TestLst = []
@@ -617,15 +625,17 @@ class MainFrame(tk.Toplevel):
 
 		wdsLst = []
 
-		# get forgot words
+		# get forgotten words
 		familiar = -10.0
 		words_len = 0
 
+		# get new words list (familiar < 0)
 		newWdsLst = []
 
-		while(words_len < limit and familiar <= 0):
-			where = "level = '" + level + "' and familiar = " + str(familiar) + " limit " + str(limit - words_len)
-			if self.__mySDict.get_wordslst(wdsLst, where):
+		while(words_len < newWdsLimit and familiar <= 0):
+			# where = "level = '" + level + "' and familiar = " + str(familiar) + " limit " + str(limit - words_len)
+			# if self.__mySDict.GetWordsLst(wdsLst, where):
+			if self.__usrProgress.GetWordsLst(wdsLst, level, familiar, newWdsLimit - words_len):
 				for item in wdsLst:
 					for wd in item:
 						# self.__WordsDict[wd] = string.atof(familiar)
@@ -637,44 +647,38 @@ class MainFrame(tk.Toplevel):
 				# words_len = len(self.__LearnLst)
 				words_len = len(newWdsLst)
 			familiar += 0.5
-			#_logging.info(familiar)
+			#gLogger.info(familiar)
 			familiar = round(familiar, 1)
 
 		# random.shuffle(self.__LearnLst)
 
-		forgotWdsLst = []
+		forgottenWdsLst = []
 
-		_logging.info("len of raw new words: %d." %(len(newWdsLst)))
+		# gLogger.info("length of new words: %d." %(len(newWdsLst)))
 		for wd in newWdsLst: 
-			lastDate = self.__mySDict.get_item(wd, "LastDate")
+			lastDate = self.__usrProgress.GetLastDate(wd)
 			# print(lastDate, wd)
 			if lastDate != None: 
-				forgotWdsLst.append(wd)
+				forgottenWdsLst.append(wd)
 				# newWdsLst.remove(wd)
-		for wd in forgotWdsLst: newWdsLst.remove(wd)
+		for wd in forgottenWdsLst: newWdsLst.remove(wd)
 
-		self.__LearnLst.extend(forgotWdsLst)
-		_logging.info("len of forgot words: %d." %(len(forgotWdsLst)))
-		_logging.info("len of new words: %d." %(len(newWdsLst)))
-
-		words_len = len(self.__LearnLst)
+		self.__LearnLst.extend(forgottenWdsLst)
+		gLogger.info("length of forgotten words: %d." %(len(forgottenWdsLst)))
+		gLogger.info("length of new words: %d." %(len(newWdsLst)))
 
 		#get old words
-		timeLst = []
-		for i in range(4, 9):
-			tmp = cfg.get("Time", "Time" + str(i))
-			# date = string.atoi(tmp[:-1])
-			date = int(tmp[:-1])
-			# _logging.info("date" + str(i) + ": " + tmp)
-			timeLst.append(date)
+		timeDayLst = []
+		timeArray = gCfg["TimeInterval"]
+		for timeGroup in timeArray:
+			if(timeGroup["Unit"] == "d"):
+				timeDayLst.append(timeGroup["Interval"])
 
-		timeLst = timeLst[::-1]
-		# _logging.info("timeLst: ")
-		# _logging.info(timeLst)
-		# _logging.info("timeLst: ", timeLst)
-		_logging.info("timeLst = " + "".join(list(str(timeLst))))
+		timeDayLst = timeDayLst[::-1]		# reverse list
+		# gLogger.info("timeDayLst: ", timeDayLst)
+		gLogger.info("timeDayLst = " + "".join(list(str(timeDayLst))))
 
-		oldword_limit = limit*len(timeLst) - words_len
+		oldWordsLimit = allLimit - len(self.__LearnLst)
 
 		familiar = 0.0
 		words_len = 0
@@ -683,51 +687,58 @@ class MainFrame(tk.Toplevel):
 
 		lastlastdate = datetime.date.strftime(datetime.date.today(), "%Y-%m-%d") 
 
-		for day in timeLst:
+		for day in timeDayLst:
 			selDate = datetime.date.today() - datetime.timedelta(day)
-			# _logging.info("selDate:", selDate)
+			# gLogger.info("selDate:", selDate)
 			lastdate = datetime.date.strftime(selDate, "%Y-%m-%d")
 
-			if day == timeLst[0]:
-				where = "level = '" + level + "' and lastdate <= date('" + lastdate + "') and familiar < 10"
+			if day == timeDayLst[0]:
+				lastlastdate = lastdate
+				# where = "level = '" + level + "' and lastdate <= date('" + lastdate + "') and familiar < 10"
 			else:
-				where = "level = '" + level + "' and lastdate <= date('" + lastdate + "') and lastdate > date('" + lastlastdate + "') and familiar < 10"
+				# where = "level = '" + level + "' and lastdate <= date('" + lastdate + "') and lastdate > date('" + lastlastdate + "') and familiar < 10"
+				pass
 
-			num = self.__mySDict.get_count(where)
+			# num = self.__mySDict.GetCount(where)
 
-			_logging.info(lastdate + " day: " + str(day) + " "+ str(num) + " Words due to test.")
+			# gLogger.info(lastdate + " day: " + str(day) + " "+ str(num) + " Words due to test.")
 
-			due2test_num += num
+			# due2test_num += num
 
-			if (words_len < oldword_limit):
+			if (words_len < oldWordsLimit):
 				# lastdate = datetime.date.strftime(selDate, "%Y-%m-%d")
-				# _logging.info("lastdate: " + lastdate)
-				# where = "level = '" + level + "' and lastdate <= date('" + lastdate + "') and familiar < 10 order by familiar limit " + str(oldword_limit - words_len)
-				# where = "level = '" + level + "' and lastdate <= date('" + lastdate + "') and lastdate > date('" + lastlastdate + "') and familiar < 10 order by familiar limit " + str(oldword_limit - words_len)
-				where += " order by familiar limit " + str(oldword_limit - words_len)
-				if self.__mySDict.get_wordslst(wdsLst, where):
-					i = 0
+				# gLogger.info("lastdate: " + lastdate)
+				# where = "level = '" + level + "' and lastdate <= date('" + lastdate + "') and familiar < 10 order by familiar limit " + str(oldWordsLimit - words_len)
+				# where = "level = '" + level + "' and lastdate <= date('" + lastdate + "') and lastdate > date('" + lastlastdate + "') and familiar < 10 order by familiar limit " + str(oldWordsLimit - words_len)
+				'''
+				where += " order by familiar limit " + str(oldWordsLimit - words_len)
+				if self.__mySDict.GetWordsLst(wdsLst, where):
+				'''
+				limit = oldWordsLimit - words_len
+				if self.__usrProgress.GetWordsLst(wdsLst, level, lastdate, lastlastdate, 10, limit):
+					# i = 0
 					for item in wdsLst:
 						for wd in item:
-							# self.__WordsDict[wd] = string.atof(self.__mySDict.get_item(wd, "familiar"))
-							self.__WordsDict[wd] = self.__mySDict.get_item(wd, "familiar")
-							# _logging.info("word: %s, familiar: %f" %(wd, self.__WordsDict[wd]))
+							# self.__WordsDict[wd] = self.__mySDict.GetItem(wd, "familiar")
+							self.__WordsDict[wd] = self.__usrProgress.GetFamiliar(wd)
+							# gLogger.info("word: %s, familiar: %f" %(wd, self.__WordsDict[wd]))
 							# print(wd, type(self.__WordsDict[wd]))
 							self.__TestLst.append(wd)
-							i += 1
+							# i += 1
 					wdsLst = []
 					words_len = len(self.__TestLst)
-					_logging.info("lastdate: " + lastdate + ", len: " + str(i))
+					# gLogger.info("lastdate: " + lastdate + ", len: " + str(i))
 			# else: break
 			lastlastdate = lastdate
 
-		_logging.info("Words due to test: %d", due2test_num)
+		# gLogger.info("Words due to test: %d", due2test_num)
 
-		# _logging.info("TestLst = " + "".join(list(str(self.__TestLst))))
+		# gLogger.info("TestLst = " + "".join(list(str(self.__TestLst))))
 		self.__TestLst.extend(self.__LearnLst)
 
-		words_len = limit*len(timeLst) - len(self.__TestLst)
-		print("left %d words for new" %words_len)
+		words_len = allLimit - len(self.__TestLst)
+		gLogger.info("left %d words for new" %words_len)
+
 		if words_len > 0: 
 			self.__TestLst.extend(newWdsLst[:words_len - 1])
 			self.__LearnLst.extend(newWdsLst[:words_len - 1])
@@ -737,14 +748,14 @@ class MainFrame(tk.Toplevel):
 
 		random.shuffle(self.__LearnLst)
 
-		_logging.info("len of all TestWordsList: %d." %(len(self.__TestLst)))
+		gLogger.info("len of all TestWordsList: %d." %(len(self.__TestLst)))
 		self.__TestLst = list(set(self.__TestLst))	# remove duplicate item 
-		_logging.info("len of no repeat all TestWordsList: %d." %(len(self.__TestLst)))
-		# _logging.info("WordsDict = " + str(self.__WordsDict))
-		# _logging.info("len of WordsDict: %d: " %(len(self.__WordsDict)))
-		# _logging.info(self.__LearnLst)
-		# _logging.info("LearnLst = " + "".join(list(str(self.__LearnLst))))
-		_logging.info("len of LearnList: %d." %(len(self.__LearnLst)))
+		gLogger.info("len of no repeat all TestWordsList: %d." %(len(self.__TestLst)))
+		# gLogger.info("WordsDict = " + str(self.__WordsDict))
+		# gLogger.info("len of WordsDict: %d: " %(len(self.__WordsDict)))
+		# gLogger.info(self.__LearnLst)
+		# gLogger.info("LearnLst = " + "".join(list(str(self.__LearnLst))))
+		gLogger.info("len of LearnList: %d." %(len(self.__LearnLst)))
 		#self.__wordInput['state'] = 'readonly'
 
 		self.__numOfLearn.set("%d words to Learn!" %(len(self.__LearnLst)))
@@ -752,9 +763,11 @@ class MainFrame(tk.Toplevel):
 		self.__GoStudyMode()
 
 	def __Save_Progress(self):
-		#_logging.info("WordsDict: ", self.__WordsDict)
-		print("len of self.__WordsDict: %d" %len(self.__WordsDict))
-		_logging.info("WordsDict = " + str(self.__WordsDict))
+		# global gLogger
+
+		#gLogger.info("WordsDict: ", self.__WordsDict)
+		gLogger.info("len of self.__WordsDict: %d" %len(self.__WordsDict))
+		gLogger.info("WordsDict = " + str(self.__WordsDict))
 
 		# today = datetime.date.strftime(datetime.date.today(), "%Y-%m-%d")
 
@@ -773,10 +786,8 @@ class MainFrame(tk.Toplevel):
 			for word in self.__CurTestLst: 
 				if word in self.__WordsDict: del self.__WordsDict[word]
 
-		print("len of self.__WordsDict: %d" %len(self.__WordsDict))
-		print("WordsDict = " + str(self.__WordsDict))
-
-		itmLst = ['familiar', 'lastdate']
+		gLogger.info("len of self.__WordsDict: %d" %len(self.__WordsDict))
+		gLogger.info("WordsDict = " + str(self.__WordsDict))
 
 		for word, familiar in self.__WordsDict.items():
 
@@ -787,31 +798,24 @@ class MainFrame(tk.Toplevel):
 
 			familiar = round(familiar, 1)
 
-			valLst = []
-			valLst.append(str(familiar))
-			valLst.append("date('" + self.__today + "')")
-			valueDict = dict(zip(itmLst, valLst))
+			self.__usrProgress.UpdateProgress(word, familiar, self.__today)
 
-			_logging.info(word + ": " + str(valueDict))
-
-			#self.__mySDict.update_item(word, "familiar", str(familiar))
-			self.__mySDict.update(word, valueDict)
-
-		# _logging.info("TestWordsList: ")
-		# _logging.info(self.__TestLst)
-		# _logging.info("LearnWordsList: ")
-		# _logging.info(self.__LearnLst)
+		# gLogger.info("TestWordsList: ")
+		# gLogger.info(self.__TestLst)
+		# gLogger.info("LearnWordsList: ")
+		# gLogger.info(self.__LearnLst)
 
 	def onCloseWindow(self):
-		result = msgBox.askyesno(self.__Mode.get(), "Are you goning to quit?")
+		result = msgBox.askyesno(self.__Mode.get(), "Are you going to quit?")
 		if result == True: 
 			self.__Save_Progress()
 			self.__Exit_App()
 		else: return
 
 	def __Exit_App(self, event = None):
-		self.__mySDict.close()
-		# self.__logFile.close()
+		# self.__dictBase.Close() 
+		# self.__audioBase.Close()
+		# self.__usrProgress.Close()
 		os._exit(0)
 
 ########################################################################

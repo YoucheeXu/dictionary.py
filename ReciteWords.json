@@ -1,0 +1,84 @@
+{
+	"Common": {
+		"ver": "1.0.0.7"
+	},
+
+	"GUI": {
+		"BackColor": "67,160,255",
+		"Height": 551,
+		"Skin": "Skin",
+		"Width": 701
+	},
+
+	"General": {
+		"Limit": 200
+	},
+
+	"StudyMode": {
+		"Limit": 25,
+		"LeastFamiliar": 0
+	},
+
+	"TestMode": {
+		"GroupNum": 10,
+		"Times": 4
+	},
+
+	"TimeInterval": [
+		{
+			"Interval": 5,
+			"Unit": "m"
+		}, {
+			"Interval": 30,
+			"Unit": "m"
+		}, {	
+			"Interval": 12,
+			"Unit": "h"
+		}, {
+			"Interval": 1,
+			"Unit": "d"
+		}, {
+			"Interval": 2,
+			"Unit": "d"
+		}, {
+			"Interval": 4,
+			"Unit": "d"
+		}, {
+			"Interval": 7,
+			"Unit": "d"
+		}, {
+			"Interval": 15,
+			"Unit": "d"
+		}		
+	],
+
+	"Debug": {
+		"Enable": "true",
+		"File": "logs/ReciteWords.log"
+	},
+
+	"DictBase": {
+		"DictBase": {
+			"Name": "15000",
+			"Dict": "dict/15000.dict",
+			"Format": {
+				"Type": "SQLite"
+			}
+		},
+		"AudioBase": {
+			"Name": "Google",
+			"Dict": "audio/Google"
+		}
+	},
+
+	"User": {
+		"nUser": 1,
+		"Info": [
+			{
+				"Name": "XYQ",
+				"Target": "CET6",
+				"Progress": "dict/XYQ.progress"
+			}
+		]
+	}
+}
